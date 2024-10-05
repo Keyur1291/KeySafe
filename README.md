@@ -4,18 +4,18 @@
 sensitive information, even without an internet connection. It empowers you to take control of your
 digital life with features like:
 
-* **[x]Offline Encryption:**  Shield your passwords with advanced encryption algorithms, ensuring their
+* **Offline Encryption:**  Shield your passwords with advanced encryption algorithms, ensuring their
   safety even when you're disconnected (**Partial encryption implemented**).
-* **[x]Strong Password Generator:**  Effortlessly create complex, random passwords with a single tap,
+* **Strong Password Generator:**  Effortlessly create complex, random passwords with a single tap,
   boosting your security posture.
-* **[x]Biometric Authentication:**  Utilize fingerprint or facial recognition for an extra layer of
+* **Biometric Authentication:**  Utilize fingerprint or facial recognition for an extra layer of
   protection and a touch of convenience.
 
 **Coming Soon:**
 
-* **[ ]Organized Passwords:** Categorize and tag your passwords for effortless retrieval and
+* **Organized Passwords:** Categorize and tag your passwords for effortless retrieval and
   streamlined management.
-* **[ ]Import & Export:** Seamlessly transfer passwords between devices or services for ultimate
+* **Import & Export:** Seamlessly transfer passwords between devices or services for ultimate
   flexibility.
 
 **KeySafe prioritizes your password security and user-friendliness, offering a reliable solution to
