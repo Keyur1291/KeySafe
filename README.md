@@ -30,20 +30,22 @@ KeySafe puts your password security and convenience at the forefront, providing 
 6.Jetpack Datastore\
 7.Predictive Back Animations\
 8.Swipe to delete Item\
-9.WindowSizeClass
+9.WindowSizeClass\
+10.MVVM
 ## Screenshots
 
-<img alt="Login Page" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Login.png">
-<img alt="Biometric Popup" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Biometric.png">
-<img alt="Login with device Pin" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/UsePin.png">
-<img alt="Home Page" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Home.png">
-<img alt="Add password Page" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/AddPassword.png">
-<img alt="Advance Options" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/AdvanceOptions.png">
-<img alt="Generate Password" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/AdvanceOptionVid.webm">
-<img alt="View Page" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/ViewPass.png">
-<img alt="Search a Password" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Search.png">
-<img alt="Search Query" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/SearchWithI.png">
-<img alt="Share Password" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Share.png">
+<p align="center">
+    <img alt="Login Page" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Login.png">
+    <img alt="Biometric Popup" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Biometric.png">
+    <img alt="Login with device Pin" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/UsePin.png">
+    <img alt="Home Page" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Home.png">
+    <img alt="Add password Page" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/AddPassword.png">
+    <img alt="Advance Options" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/AdvanceOptions.png">
+    <img alt="View Page" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/ViewPass.png">
+    <img alt="Search a Password" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Search.png">
+    <img alt="Search Query" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/SearchWithI.png">
+    <img alt="Share Password" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Share.png">
+</p>
 
 ## Author
 
