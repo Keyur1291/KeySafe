@@ -33,7 +33,7 @@ KeySafe puts your password security and convenience at the forefront, providing 
 9.WindowSizeClass
 ## Screenshots
 
-![Login Page](https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Login.png)
+<img alt="Login Page" height="1080" width="2400" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Login.png">
 ![Biometric Popup](https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Biometric.png)
 ![Login with device Pin](https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/UsePin.png)
 ![Home Page](https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Home.png)
@@ -48,5 +48,5 @@ KeySafe puts your password security and convenience at the forefront, providing 
 ## Author
 
 X(Formerly Twitter): [@Keyur1291](https://www.github.com/Keyur1291)\
-Github: [@Keyur12901](https://www.x.com/Keyur12901)\
+Github: [@Keyur12901](https://www.x.com/Keyur12901)
 
