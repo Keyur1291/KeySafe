@@ -33,17 +33,17 @@ KeySafe puts your password security and convenience at the forefront, providing 
 9.WindowSizeClass
 ## Screenshots
 
-<img alt="Login Page" height="1080" width="2400" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Login.png">
-![Biometric Popup](https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Biometric.png)
-![Login with device Pin](https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/UsePin.png)
-![Home Page](https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Home.png)
-![Add password Page](https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/AddPassword.png)
-![Advance Options](https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/AdvanceOptions.png)
-![Generate Password](https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/AdvanceOptionVid.png)
-![View Page](https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/ViewPass.png)
-![Search a Password](https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Search.png)
-![Search Query](https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/SearchWithI.png)
-![Share Password](https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Share.png)
+<img alt="Login Page" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Login.png">
+<img alt="Biometric Popup" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Biometric.png">
+<img alt="Login with device Pin" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/UsePin.png">
+<img alt="Home Page" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Home.png">
+<img alt="Add password Page" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/AddPassword.png">
+<img alt="Advance Options" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/AdvanceOptions.png">
+<img alt="Generate Password" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/AdvanceOptionVid.png">
+<img alt="View Page" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/ViewPass.png">
+<img alt="Search a Password" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Search.png">
+<img alt="Search Query" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/SearchWithI.png">
+<img alt="Share Password" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Share.png">
 
 ## Author
 
