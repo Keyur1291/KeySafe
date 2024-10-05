@@ -51,8 +51,8 @@ manage your digital life, online or offline.**
 
 ## Meet the Developer:
 
-* **X(Formerly Twitter):** [@Keyur1291](https://www.github.com/Keyur1291)
-* **Github:** [@Keyur12901](https://www.x.com/Keyur12901)
+* **Github::** [@Keyur1291](https://www.github.com/Keyur1291)
+* **X(Formerly Twitter)** [@Keyur12901](https://www.x.com/Keyur12901)
 
 **KeySafe** is actively being developed, with features like password organization and import/export
 functionalities on the horizon. Stay tuned for updates!
