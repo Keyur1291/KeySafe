@@ -1,17 +1,19 @@
-package com.android.keysafe
+package com.android.keysafe.Navigation
 
-import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.android.keysafe.BiometricPromptManager
+import com.android.keysafe.ViewModel.PasswordViewModel
+import com.android.keysafe.Screens.LoginScreen
+import com.android.keysafe.Screens.PasswordDetailScreen
+import com.android.keysafe.Screens.PasswordList
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable

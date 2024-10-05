@@ -1,10 +1,9 @@
-package com.android.keysafe
+package com.android.keysafe.Screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -23,7 +22,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -57,15 +55,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.android.keysafe.ViewModel.PasswordViewModel
+import com.android.keysafe.R
 import com.android.keysafe.data.Password
 import kotlinx.coroutines.delay
-import java.nio.channels.FileChannel.MapMode
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -117,7 +114,10 @@ fun SharedTransitionScope.PasswordList(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    navController.navigate(route = PasswordDetailScreen(id = 0,)) {
+                                    navController.navigate(route = com.android.keysafe.Navigation.PasswordDetailScreen(
+                                        id = 0,
+                                    )
+                                    ) {
                                         viewModel.passwordTitleState = ""
                                         viewModel.passwordUserNameState = ""
                                         viewModel.passwordPasswordState = ""
@@ -179,7 +179,10 @@ fun SharedTransitionScope.PasswordList(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                navController.navigate(route = PasswordDetailScreen(id = 0)) {
+                                navController.navigate(route = com.android.keysafe.Navigation.PasswordDetailScreen(
+                                    id = 0
+                                )
+                                ) {
                                     viewModel.passwordTitleState = ""
                                     viewModel.passwordUserNameState = ""
                                     viewModel.passwordPasswordState = ""
@@ -413,7 +416,11 @@ fun SharedTransitionScope.SwipeToDeleteContainer(
                     password = password,
                     onClick = {
                         val id = password.id
-                        navController.navigate(PasswordDetailScreen(id = id)) {
+                        navController.navigate(
+                            com.android.keysafe.Navigation.PasswordDetailScreen(
+                                id = id
+                            )
+                        ) {
                             launchSingleTop = true
                             viewModel.passwordTitleState = password.title
                             viewModel.passwordUserNameState = password.userName
