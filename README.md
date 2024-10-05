@@ -1,3 +1,4 @@
+<img alt="Biometric Popup" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Banner.png" title="Banner">
 ## KeySafe
 
 **KeySafe** is a comprehensive password manager app designed to be your **secure haven** for
