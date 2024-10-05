@@ -83,6 +83,7 @@ Absolutely, here's a beautified version of your KeySafe description:
 
 ## Meet the Developer:
 
-* **GitHub:** @Keyur12901 [invalid URL removed] (Note: GitHub username corrected)
+* **X(Formerly Twitter):** [@Keyur1291](https://www.github.com/Keyur1291)
+* **Github:** [@Keyur12901](https://www.x.com/Keyur12901)
 
 **KeySafe** is actively being developed, with features like password organization and import/export functionalities on the horizon. Stay tuned for updates!
