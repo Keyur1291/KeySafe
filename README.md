@@ -39,7 +39,7 @@ KeySafe puts your password security and convenience at the forefront, providing 
 <img alt="Home Page" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Home.png">
 <img alt="Add password Page" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/AddPassword.png">
 <img alt="Advance Options" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/AdvanceOptions.png">
-<img alt="Generate Password" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/AdvanceOptionVid.png">
+<img alt="Generate Password" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/AdvanceOptionVid.webm">
 <img alt="View Page" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/ViewPass.png">
 <img alt="Search a Password" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/Search.png">
 <img alt="Search Query" width="150" src="https://github.com/Keyur1291/KeySafe/blob/main/Screenshots/SearchWithI.png">
