@@ -274,7 +274,7 @@ fun FabUI(dataStoreManager: DataStoreManager, navController: NavController) {
         val menuItems = listOf(
             MenuItem(
                 icon = Icons.Rounded.Password,
-                title = "Change Password",
+                title = "Reset Password",
                 onClick = {
                     scope.launch {
                         dataStoreManager.clearDataStore()
