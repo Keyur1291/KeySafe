@@ -8,9 +8,11 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -28,6 +30,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -39,7 +42,6 @@ import androidx.compose.material.icons.rounded.DeleteSweep
 import androidx.compose.material.icons.rounded.Facebook
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Password
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
@@ -64,6 +66,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -71,8 +74,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.android.keysafe.Navigation.RegisterScreen
-import com.android.keysafe.ViewModel.PasswordViewModel
 import com.android.keysafe.R
+import com.android.keysafe.ViewModel.PasswordViewModel
 import com.android.keysafe.data.DataStoreManager
 import com.android.keysafe.data.Password
 import kotlinx.coroutines.delay
@@ -265,11 +268,12 @@ fun SharedTransitionScope.PasswordList(
 @Composable
 fun FabUI(dataStoreManager: DataStoreManager, navController: NavController) {
     Column(
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.End
     ) {
         var showSubMenu by remember { mutableStateOf(false) }
         val transition = updateTransition(targetState = showSubMenu, label = "FabTransition")
-        val rotation by transition.animateFloat(label = "rotation"){ if(it) 315f else 0f }
+        val rotation by transition.animateFloat(label = "rotation"){ if(it) 130f else 0f }
         val scope = rememberCoroutineScope()
         val menuItems = listOf(
             MenuItem(
@@ -285,39 +289,36 @@ fun FabUI(dataStoreManager: DataStoreManager, navController: NavController) {
             MenuItem(
                 icon = Icons.AutoMirrored.Rounded.Help,
                 title = "Help",
-                onClick = {  }
+                onClick = {}
             )
         )
 
         AnimatedVisibility(
             visible = showSubMenu,
-            enter = fadeIn() + slideInVertically(
-                animationSpec = spring(dampingRatio = 0.5f, stiffness = 180f),
-                initialOffsetY = {it}
-            ) + expandVertically(),
+            enter = fadeIn() + slideInVertically(initialOffsetY = {it}) + expandHorizontally(
+                animationSpec = spring(dampingRatio = 0.8f, stiffness = 200f)) + expandVertically(),
             exit = fadeOut() + slideOutVertically(
-                animationSpec = spring(dampingRatio = 0.5f, stiffness = 180f),
-                targetOffsetY = {it}
-            ) + shrinkVertically()
+                targetOffsetY = {it}) + shrinkHorizontally() + shrinkVertically()
         ) {
             LazyColumn(
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier.padding(top = 8.dp, start = 8.dp, end = 12.dp),
+                horizontalAlignment = Alignment.End,
             ) {
                 items(menuItems) {
-                    MenuUI(
-                        menuItems = it
-                    )
+                    MenuUI(menuItems = it)
                 }
             }
         }
 
         FloatingActionButton(
+            modifier = Modifier.padding(end = 8.dp),
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
             onClick = {
                 showSubMenu = !showSubMenu
             }
         ) {
             Icon(
-                modifier = Modifier.rotate(rotation),
+                modifier = Modifier.rotate(rotation).size(28.dp),
                 imageVector = Icons.Rounded.Add,
                 contentDescription = null
             )
@@ -336,12 +337,20 @@ fun MenuUI(menuItems: MenuItem) {
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(8.dp)
-    ) {
+        modifier = Modifier.padding(bottom = 16.dp)) {
+        Text(
+            modifier = Modifier
+                .shadow(elevation = 8.dp, shape = RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                .padding(8.dp),
+            text = menuItems.title
+        )
         Spacer(Modifier.width(8.dp))
-        Text(text = menuItems.title)
         SmallFloatingActionButton(
-            onClick = menuItems.onClick
+            contentColor = MaterialTheme.colorScheme.primary,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            onClick = {}
         ) {
             Icon(
                 imageVector = menuItems.icon,
