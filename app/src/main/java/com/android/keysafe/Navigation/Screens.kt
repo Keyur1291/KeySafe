@@ -10,3 +10,6 @@ data object PasswordListScreen
 
 @Serializable
 data class PasswordDetailScreen(val id: Int)
+
+@Serializable
+data object RegisterScreen

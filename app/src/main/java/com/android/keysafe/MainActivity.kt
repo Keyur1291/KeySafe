@@ -10,10 +10,13 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.fragment.app.FragmentActivity
 import com.android.keysafe.Navigation.NavController
 import com.android.keysafe.ViewModel.PasswordViewModel
+import com.android.keysafe.data.DataStoreManager
+import com.android.keysafe.data.preferenceDataStore
 import com.android.keysafe.ui.theme.KeySafeTheme
 
 class MainActivity : FragmentActivity() {
@@ -28,12 +31,18 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+
+            val context = LocalContext.current
+            val dataStoreManager = DataStoreManager(context = context)
+
             KeySafeTheme {
                 Surface {
                     NavController(
                         modifier = Modifier.windowInsetsPadding(WindowInsets.displayCutout),
                         promptManager = promptManager,
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        dataStoreManager = dataStoreManager,
+                        preferenceDataStore = preferenceDataStore
                     )
                 }
             }

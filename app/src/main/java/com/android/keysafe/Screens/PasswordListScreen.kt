@@ -4,12 +4,16 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,15 +33,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Help
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.DeleteSweep
 import androidx.compose.material.icons.rounded.Facebook
 import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.Password
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
@@ -49,20 +58,31 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.android.keysafe.Navigation.RegisterScreen
 import com.android.keysafe.ViewModel.PasswordViewModel
 import com.android.keysafe.R
+import com.android.keysafe.data.DataStoreManager
 import com.android.keysafe.data.Password
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+data class MenuItem(
+    val icon: ImageVector,
+    val title: String,
+    val onClick: () -> Unit
+)
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -71,7 +91,8 @@ fun SharedTransitionScope.PasswordList(
     modifier: Modifier = Modifier,
     navController: NavController,
     viewModel: PasswordViewModel,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    dataStoreManager: DataStoreManager
 ) {
 
     val passwordsList = viewModel.getPasswords.collectAsState(initial = listOf())
@@ -95,6 +116,9 @@ fun SharedTransitionScope.PasswordList(
                 viewModel = viewModel,
                 navController = navController
             )
+        },
+        floatingActionButton = {
+            FabUI(dataStoreManager = dataStoreManager, navController = navController)
         }
     ) { innerPadding ->
 
@@ -114,9 +138,10 @@ fun SharedTransitionScope.PasswordList(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    navController.navigate(route = com.android.keysafe.Navigation.PasswordDetailScreen(
-                                        id = 0,
-                                    )
+                                    navController.navigate(
+                                        route = com.android.keysafe.Navigation.PasswordDetailScreen(
+                                            id = 0,
+                                        )
                                     ) {
                                         viewModel.passwordTitleState = ""
                                         viewModel.passwordUserNameState = ""
@@ -179,9 +204,10 @@ fun SharedTransitionScope.PasswordList(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                navController.navigate(route = com.android.keysafe.Navigation.PasswordDetailScreen(
-                                    id = 0
-                                )
+                                navController.navigate(
+                                    route = com.android.keysafe.Navigation.PasswordDetailScreen(
+                                        id = 0
+                                    )
                                 ) {
                                     viewModel.passwordTitleState = ""
                                     viewModel.passwordUserNameState = ""
@@ -234,6 +260,96 @@ fun SharedTransitionScope.PasswordList(
             }
         }
     }
+}
+
+@Composable
+fun FabUI(dataStoreManager: DataStoreManager, navController: NavController) {
+    Column(
+        horizontalAlignment = Alignment.End
+    ) {
+        var showSubMenu by remember { mutableStateOf(false) }
+        val transition = updateTransition(targetState = showSubMenu, label = "FabTransition")
+        val rotation by transition.animateFloat(label = "rotation"){ if(it) 315f else 0f }
+        val scope = rememberCoroutineScope()
+        val menuItems = listOf(
+            MenuItem(
+                icon = Icons.Rounded.Password,
+                title = "Change Password",
+                onClick = {
+                    scope.launch {
+                        dataStoreManager.clearDataStore()
+                        navController.navigate(route = RegisterScreen)
+                    }
+                }
+            ),
+            MenuItem(
+                icon = Icons.AutoMirrored.Rounded.Help,
+                title = "Help",
+                onClick = {  }
+            )
+        )
+
+        AnimatedVisibility(
+            visible = showSubMenu,
+            enter = fadeIn() + slideInVertically(
+                animationSpec = spring(dampingRatio = 0.5f, stiffness = 180f),
+                initialOffsetY = {it}
+            ) + expandVertically(),
+            exit = fadeOut() + slideOutVertically(
+                animationSpec = spring(dampingRatio = 0.5f, stiffness = 180f),
+                targetOffsetY = {it}
+            ) + shrinkVertically()
+        ) {
+            LazyColumn(
+                modifier = Modifier.padding(8.dp)
+            ) {
+                items(menuItems) {
+                    MenuUI(
+                        menuItems = it
+                    )
+                }
+            }
+        }
+
+        FloatingActionButton(
+            onClick = {
+                showSubMenu = !showSubMenu
+            }
+        ) {
+            Icon(
+                modifier = Modifier.rotate(rotation),
+                imageVector = Icons.Rounded.Add,
+                contentDescription = null
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun Prev() {
+
+}
+
+@Composable
+fun MenuUI(menuItems: MenuItem) {
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(8.dp)
+    ) {
+        Spacer(Modifier.width(8.dp))
+        Text(text = menuItems.title)
+        SmallFloatingActionButton(
+            onClick = menuItems.onClick
+        ) {
+            Icon(
+                imageVector = menuItems.icon,
+                contentDescription = menuItems.title
+            )
+        }
+    }
+
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -464,10 +580,4 @@ fun DeleteBackground(
             contentDescription = null
         )
     }
-}
-
-@Preview(showSystemUi = true, showBackground = true)
-@Composable
-private fun ListPreview() {
-
 }
