@@ -13,8 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.fragment.app.FragmentActivity
-import com.android.keysafe.Navigation.NavController
-import com.android.keysafe.ViewModel.PasswordViewModel
+import com.android.keysafe.navigation.NavController
+import com.android.keysafe.viewModel.PasswordViewModel
 import com.android.keysafe.data.DataStoreManager
 import com.android.keysafe.data.preferenceDataStore
 import com.android.keysafe.ui.theme.KeySafeTheme

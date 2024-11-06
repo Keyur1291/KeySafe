@@ -1,4 +1,4 @@
-package com.android.keysafe.ViewModel
+package com.android.keysafe.viewModel
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf

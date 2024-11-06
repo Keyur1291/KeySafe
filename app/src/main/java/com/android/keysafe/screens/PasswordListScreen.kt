@@ -1,4 +1,4 @@
-package com.android.keysafe.Screens
+package com.android.keysafe.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -73,9 +73,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.android.keysafe.Navigation.RegisterScreen
+import com.android.keysafe.navigation.RegisterScreen
 import com.android.keysafe.R
-import com.android.keysafe.ViewModel.PasswordViewModel
+import com.android.keysafe.viewModel.PasswordViewModel
 import com.android.keysafe.data.DataStoreManager
 import com.android.keysafe.data.Password
 import kotlinx.coroutines.delay
@@ -121,7 +121,10 @@ fun SharedTransitionScope.PasswordList(
             )
         },
         floatingActionButton = {
-            FabUI(dataStoreManager = dataStoreManager, navController = navController)
+            FabUI(
+                dataStoreManager = dataStoreManager,
+                navController = navController
+            )
         }
     ) { innerPadding ->
 
@@ -142,7 +145,7 @@ fun SharedTransitionScope.PasswordList(
                                 .fillMaxWidth()
                                 .clickable {
                                     navController.navigate(
-                                        route = com.android.keysafe.Navigation.PasswordDetailScreen(
+                                        route = com.android.keysafe.navigation.PasswordDetailScreen(
                                             id = 0,
                                         )
                                     ) {
@@ -208,7 +211,7 @@ fun SharedTransitionScope.PasswordList(
                             .fillMaxWidth()
                             .clickable {
                                 navController.navigate(
-                                    route = com.android.keysafe.Navigation.PasswordDetailScreen(
+                                    route = com.android.keysafe.navigation.PasswordDetailScreen(
                                         id = 0
                                     )
                                 ) {
@@ -266,32 +269,42 @@ fun SharedTransitionScope.PasswordList(
 }
 
 @Composable
-fun FabUI(dataStoreManager: DataStoreManager, navController: NavController) {
+fun FabUI(
+    modifier: Modifier = Modifier,
+    dataStoreManager: DataStoreManager,
+    navController: NavController
+) {
+
+    var showSubMenu by remember { mutableStateOf(false) }
+    val transition = updateTransition(targetState = showSubMenu, label = "FabTransition")
+    val rotation by transition.animateFloat(label = "rotation"){ if(it) 140f else 0f }
+    val scope = rememberCoroutineScope()
+    val menuItems = listOf(
+        MenuItem(
+            icon = Icons.Rounded.Password,
+            title = "Reset Password",
+            onClick = {
+                scope.launch {
+                    dataStoreManager.clearDataStore()
+                    navController.navigate(route = RegisterScreen)
+                }
+            }
+        ),
+        MenuItem(
+            icon = Icons.AutoMirrored.Rounded.Help,
+            title = "Help",
+            onClick = {}
+        )
+    )
+
     Column(
-        verticalArrangement = Arrangement.Top,
+        modifier = modifier
+            .clickable {
+                showSubMenu = false
+            },
+        verticalArrangement = Arrangement.Bottom,
         horizontalAlignment = Alignment.End
     ) {
-        var showSubMenu by remember { mutableStateOf(false) }
-        val transition = updateTransition(targetState = showSubMenu, label = "FabTransition")
-        val rotation by transition.animateFloat(label = "rotation"){ if(it) 130f else 0f }
-        val scope = rememberCoroutineScope()
-        val menuItems = listOf(
-            MenuItem(
-                icon = Icons.Rounded.Password,
-                title = "Reset Password",
-                onClick = {
-                    scope.launch {
-                        dataStoreManager.clearDataStore()
-                        navController.navigate(route = RegisterScreen)
-                    }
-                }
-            ),
-            MenuItem(
-                icon = Icons.AutoMirrored.Rounded.Help,
-                title = "Help",
-                onClick = {}
-            )
-        )
 
         AnimatedVisibility(
             visible = showSubMenu,
@@ -301,7 +314,9 @@ fun FabUI(dataStoreManager: DataStoreManager, navController: NavController) {
                 targetOffsetY = {it}) + shrinkHorizontally() + shrinkVertically()
         ) {
             LazyColumn(
-                modifier = Modifier.padding(top = 8.dp, start = 8.dp, end = 12.dp),
+                modifier = Modifier
+                    .padding(top = 8.dp, start = 8.dp),
+                verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.End,
             ) {
                 items(menuItems) {
@@ -309,16 +324,16 @@ fun FabUI(dataStoreManager: DataStoreManager, navController: NavController) {
                 }
             }
         }
-
         FloatingActionButton(
-            modifier = Modifier.padding(end = 8.dp),
             containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
             onClick = {
                 showSubMenu = !showSubMenu
             }
         ) {
             Icon(
-                modifier = Modifier.rotate(rotation).size(28.dp),
+                modifier = Modifier
+                    .rotate(rotation)
+                    .size(28.dp),
                 imageVector = Icons.Rounded.Add,
                 contentDescription = null
             )
@@ -542,7 +557,7 @@ fun SharedTransitionScope.SwipeToDeleteContainer(
                     onClick = {
                         val id = password.id
                         navController.navigate(
-                            com.android.keysafe.Navigation.PasswordDetailScreen(
+                            com.android.keysafe.navigation.PasswordDetailScreen(
                                 id = id
                             )
                         ) {
