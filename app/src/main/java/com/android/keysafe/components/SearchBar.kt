@@ -1,4 +1,4 @@
-package com.android.keysafe.screens
+package com.android.keysafe.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -38,9 +38,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.android.keysafe.navigation.PasswordDetailScreen
-import com.android.keysafe.viewModel.PasswordViewModel
-import com.android.keysafe.data.Password
+import com.android.keysafe.PasswordViewModel
+import com.android.keysafe.navController.PasswordDetailScreen
+import com.android.keysafe.model.Password
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

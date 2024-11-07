@@ -1,4 +1,4 @@
-package com.android.keysafe.navigation
+package com.android.keysafe.navController
 
 import kotlinx.serialization.Serializable
 

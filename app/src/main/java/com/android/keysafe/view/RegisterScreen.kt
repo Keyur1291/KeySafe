@@ -1,4 +1,4 @@
-package com.android.keysafe.screens
+package com.android.keysafe.view
 
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -29,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
@@ -48,12 +49,13 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.navigation.NavController
 import androidx.window.core.layout.WindowWidthSizeClass
-import com.android.keysafe.navigation.LoginScreen
-import com.android.keysafe.navigation.PasswordListScreen
-import com.android.keysafe.viewModel.PasswordViewModel
-import com.android.keysafe.data.DataStoreManager
-import com.android.keysafe.data.DataStoreManager.Companion.PASSWORD
-import com.android.keysafe.data.LoginPassword
+import com.android.keysafe.navController.LoginScreen
+import com.android.keysafe.navController.PasswordListScreen
+import com.android.keysafe.PasswordViewModel
+import com.android.keysafe.model.DataStoreManager
+import com.android.keysafe.model.DataStoreManager.Companion.BIOMETRIC
+import com.android.keysafe.model.DataStoreManager.Companion.PASSWORD
+import com.android.keysafe.model.LoginPassword
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -83,7 +85,9 @@ fun SharedTransitionScope.RegisterScreen(
     }
 
     if (isPasswordSaved) {
-        navController.navigate(route = LoginScreen)
+        navController.navigate(
+            route = LoginScreen,
+        )
     }
 
     Scaffold { innerPadding ->
@@ -205,6 +209,7 @@ suspend fun checkIsPasswordSaved(
 ) {
     val preferences = preferenceDataStore.data.first()
     val password = preferences[PASSWORD]
+    val biometric = preferences[BIOMETRIC]
     val isPasswordSaved = password != null
     onResult(isPasswordSaved)
 }
@@ -217,6 +222,8 @@ fun RegisterBottomContent(
     scope: CoroutineScope,
     dataStoreManager: DataStoreManager,
 ) {
+
+    var enabled by remember { mutableStateOf(false) }
 
     var passwordVisibility by remember { mutableStateOf(false) }
     val icon = if (passwordVisibility) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility
@@ -316,6 +323,22 @@ fun RegisterBottomContent(
             },
             visualTransformation = if (!confPasswordVisibility) PasswordVisualTransformation() else VisualTransformation.None
         )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .padding(8.dp)
+        ) {
+            Text(
+                modifier = Modifier.weight(1f),
+                text = "Enable Biometric Auth"
+            )
+            Switch(
+                checked = enabled,
+                onCheckedChange = {enabled = !enabled}
+            )
+        }
+        Spacer(Modifier.height(16.dp))
         Button(
             contentPadding = PaddingValues(16.dp),
             modifier = Modifier.fillMaxWidth(0.9f),
@@ -336,7 +359,8 @@ fun RegisterBottomContent(
                     scope.launch {
                         dataStoreManager.saveToDataStore(
                             LoginPassword(
-                                loginPassword = viewModel.savePasswordState
+                                loginPassword = viewModel.savePasswordState,
+                                biometricEnable = enabled
                             )
                         )
                     }

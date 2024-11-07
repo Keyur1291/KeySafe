@@ -1,4 +1,4 @@
-package com.android.keysafe.screens
+package com.android.keysafe.view
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -65,8 +65,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.android.keysafe.viewModel.PasswordViewModel
-import com.android.keysafe.data.Password
+import com.android.keysafe.PasswordViewModel
+import com.android.keysafe.model.Password
 import kotlinx.coroutines.launch
 import java.util.regex.Pattern
 import kotlin.math.roundToInt

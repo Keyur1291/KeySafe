@@ -1,4 +1,4 @@
-package com.android.keysafe.screens
+package com.android.keysafe.view
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -36,10 +36,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Help
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.DeleteSweep
 import androidx.compose.material.icons.rounded.Facebook
+import androidx.compose.material.icons.rounded.Fingerprint
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Password
 import androidx.compose.material3.AlertDialog
@@ -73,11 +73,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.android.keysafe.navigation.RegisterScreen
+import com.android.keysafe.PasswordViewModel
 import com.android.keysafe.R
-import com.android.keysafe.viewModel.PasswordViewModel
-import com.android.keysafe.data.DataStoreManager
-import com.android.keysafe.data.Password
+import com.android.keysafe.components.SearchBar
+import com.android.keysafe.model.DataStoreManager
+import com.android.keysafe.model.Password
+import com.android.keysafe.navController.RegisterScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -145,7 +146,7 @@ fun SharedTransitionScope.PasswordList(
                                 .fillMaxWidth()
                                 .clickable {
                                     navController.navigate(
-                                        route = com.android.keysafe.navigation.PasswordDetailScreen(
+                                        route = com.android.keysafe.navController.PasswordDetailScreen(
                                             id = 0,
                                         )
                                     ) {
@@ -211,7 +212,7 @@ fun SharedTransitionScope.PasswordList(
                             .fillMaxWidth()
                             .clickable {
                                 navController.navigate(
-                                    route = com.android.keysafe.navigation.PasswordDetailScreen(
+                                    route = com.android.keysafe.navController.PasswordDetailScreen(
                                         id = 0
                                     )
                                 ) {
@@ -279,6 +280,7 @@ fun FabUI(
     val transition = updateTransition(targetState = showSubMenu, label = "FabTransition")
     val rotation by transition.animateFloat(label = "rotation"){ if(it) 140f else 0f }
     val scope = rememberCoroutineScope()
+    var biometric = dataStoreManager.getFromDataStore().collectAsState(initial = null)
     val menuItems = listOf(
         MenuItem(
             icon = Icons.Rounded.Password,
@@ -291,17 +293,17 @@ fun FabUI(
             }
         ),
         MenuItem(
-            icon = Icons.AutoMirrored.Rounded.Help,
-            title = "Help",
-            onClick = {}
+            icon = Icons.Rounded.Fingerprint,
+            title = if(biometric.value?.biometricEnable == true)"Disable Biometric Auth" else "Enable Biometric Auth",
+            onClick = {
+                biometric.value?.biometricEnable  = !biometric.value?.biometricEnable!!
+            }
         )
     )
 
     Column(
         modifier = modifier
-            .clickable {
-                showSubMenu = false
-            },
+            ,
         verticalArrangement = Arrangement.Bottom,
         horizontalAlignment = Alignment.End
     ) {
@@ -320,7 +322,9 @@ fun FabUI(
                 horizontalAlignment = Alignment.End,
             ) {
                 items(menuItems) {
-                    MenuUI(menuItems = it)
+                    MenuUI(
+                        menuItems = it
+                    )
                 }
             }
         }
@@ -358,14 +362,18 @@ fun MenuUI(menuItems: MenuItem) {
                 .shadow(elevation = 8.dp, shape = RoundedCornerShape(12.dp))
                 .clip(RoundedCornerShape(12.dp))
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                .padding(8.dp),
+                .padding(8.dp)
+                .clickable(
+                    enabled = true,
+                    onClick = menuItems.onClick
+                ),
             text = menuItems.title
         )
         Spacer(Modifier.width(8.dp))
         SmallFloatingActionButton(
             contentColor = MaterialTheme.colorScheme.primary,
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            onClick = {}
+            onClick = menuItems.onClick
         ) {
             Icon(
                 imageVector = menuItems.icon,
@@ -383,8 +391,7 @@ fun SharedTransitionScope.PasswordItem(
     modifier: Modifier,
     password: Password,
     onClick: () -> Unit,
-    animatedVisibilityScope: AnimatedVisibilityScope,
-    viewModel: PasswordViewModel
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val icon: ImageVector = when (password.title) {
 
@@ -549,15 +556,13 @@ fun SharedTransitionScope.SwipeToDeleteContainer(
             },
             content = {
                 PasswordItem(
-                    viewModel = viewModel,
                     placeHolderSize = placeHolderSize,
                     modifier = Modifier,
-                    animatedVisibilityScope = animatedVisibilityScope,
                     password = password,
                     onClick = {
                         val id = password.id
                         navController.navigate(
-                            com.android.keysafe.navigation.PasswordDetailScreen(
+                            com.android.keysafe.navController.PasswordDetailScreen(
                                 id = id
                             )
                         ) {
@@ -569,7 +574,8 @@ fun SharedTransitionScope.SwipeToDeleteContainer(
                             viewModel.textFieldEnabled = false
                             viewModel.cardExpanded = false
                         }
-                    }
+                    },
+                    animatedVisibilityScope = animatedVisibilityScope
                 )
             },
             enableDismissFromStartToEnd = false,

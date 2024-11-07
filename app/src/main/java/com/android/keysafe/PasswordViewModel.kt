@@ -1,4 +1,4 @@
-package com.android.keysafe.viewModel
+package com.android.keysafe
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -6,9 +6,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.keysafe.Graph
-import com.android.keysafe.data.Password
-import com.android.keysafe.data.PasswordRepository
+import com.android.keysafe.model.Graph
+import com.android.keysafe.model.Password
+import com.android.keysafe.model.PasswordRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch

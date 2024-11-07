@@ -1,4 +1,4 @@
-package com.android.keysafe.screens
+package com.android.keysafe.view
 
 import android.content.Intent
 import android.os.Build
@@ -62,12 +62,12 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
 import androidx.window.core.layout.WindowWidthSizeClass
-import com.android.keysafe.BiometricPromptManager
-import com.android.keysafe.BiometricPromptManager.BiometricResult
-import com.android.keysafe.navigation.PasswordListScreen
+import com.android.keysafe.components.BiometricPromptManager
+import com.android.keysafe.components.BiometricPromptManager.BiometricResult
+import com.android.keysafe.navController.PasswordListScreen
 import com.android.keysafe.R
-import com.android.keysafe.viewModel.PasswordViewModel
-import com.android.keysafe.data.DataStoreManager
+import com.android.keysafe.PasswordViewModel
+import com.android.keysafe.model.DataStoreManager
 import java.util.regex.Pattern
 
 

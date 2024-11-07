@@ -75,8 +75,8 @@ dependencies {
     implementation(libs.androidx.ui.text.google.fonts)
     implementation(libs.androidx.material3.window.size.android)
     implementation(libs.androidx.adaptive.android)
-    implementation (libs.android.database.sqlcipher)
-    implementation (libs.androidx.sqlite)
+    implementation(libs.android.database.sqlcipher)
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

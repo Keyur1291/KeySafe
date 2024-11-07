@@ -1,4 +1,4 @@
-package com.android.keysafe.data
+package com.android.keysafe.model
 
 import kotlinx.coroutines.flow.Flow
 

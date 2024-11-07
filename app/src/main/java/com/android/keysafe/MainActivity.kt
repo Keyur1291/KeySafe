@@ -13,10 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.fragment.app.FragmentActivity
-import com.android.keysafe.navigation.NavController
-import com.android.keysafe.viewModel.PasswordViewModel
-import com.android.keysafe.data.DataStoreManager
-import com.android.keysafe.data.preferenceDataStore
+import com.android.keysafe.components.BiometricPromptManager
+import com.android.keysafe.navController.NavController
+import com.android.keysafe.model.DataStoreManager
+import com.android.keysafe.model.preferenceDataStore
 import com.android.keysafe.ui.theme.KeySafeTheme
 
 class MainActivity : FragmentActivity() {

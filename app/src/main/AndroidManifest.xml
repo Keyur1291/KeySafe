@@ -4,7 +4,7 @@
 
 
     <application
-        android:name=".KeySafeApp"
+        android:name=".components.KeySafeApp"
         android:enableOnBackInvokedCallback="true"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"

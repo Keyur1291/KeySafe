@@ -1,4 +1,4 @@
-package com.android.keysafe.data
+package com.android.keysafe.model
 
 import androidx.room.Database
 import androidx.room.RoomDatabase

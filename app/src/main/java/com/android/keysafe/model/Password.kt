@@ -1,14 +1,7 @@
-package com.android.keysafe.data
+package com.android.keysafe.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.security.KeyPair
-import java.security.KeyPairGenerator
-import java.security.SecureRandom
-import java.security.interfaces.RSAPrivateKey
-import java.security.interfaces.RSAPublicKey
-import javax.crypto.Cipher
-import org.bouncycastle.jce.provider.BouncyCastleProvider
 
 @Entity
 data class Password(
