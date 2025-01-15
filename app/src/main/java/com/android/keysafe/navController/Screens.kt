@@ -2,14 +2,29 @@ package com.android.keysafe.navController
 
 import kotlinx.serialization.Serializable
 
-@Serializable
-data object LoginScreen
+sealed class SubGraph {
 
-@Serializable
-data object PasswordListScreen
+    @Serializable
+    data object AuthGraph: SubGraph()
 
-@Serializable
-data class PasswordDetailScreen(val id: Int)
+    @Serializable
+    data object HomeGraph: SubGraph()
+}
 
-@Serializable
-data object RegisterScreen
+sealed class Destinations {
+
+    @Serializable
+    data object LoginScreen: Destinations()
+
+    @Serializable
+    data object PasswordListScreen: Destinations()
+
+    @Serializable
+    data class PasswordDetailScreen(val id: Int): Destinations()
+
+    @Serializable
+    data object RegisterScreen: Destinations()
+
+    @Serializable
+    data object SettingsScreen: Destinations()
+}

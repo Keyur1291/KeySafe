@@ -1,4 +1,4 @@
-package com.android.keysafe.components
+package com.android.keysafe.view.components
 
 import android.content.Context
 import android.os.Build

@@ -1,176 +1,209 @@
 package com.android.keysafe.view
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.DeleteSweep
-import androidx.compose.material.icons.rounded.Facebook
-import androidx.compose.material.icons.rounded.Fingerprint
-import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.Password
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallFloatingActionButton
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxState
-import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import androidx.core.content.pm.ShortcutInfoCompat.Surface
 import com.android.keysafe.PasswordViewModel
 import com.android.keysafe.R
-import com.android.keysafe.components.SearchBar
-import com.android.keysafe.model.DataStoreManager
-import com.android.keysafe.model.Password
-import com.android.keysafe.navController.RegisterScreen
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.android.keysafe.view.components.CustomSearchBar
+import com.android.keysafe.view.components.ExpandableFab
+import com.android.keysafe.view.components.SwipeToDeleteContainer
+import dev.chrisbanes.haze.ExperimentalHazeApi
+import dev.chrisbanes.haze.HazeInputScale
+import dev.chrisbanes.haze.HazeProgressive
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.materials.CupertinoMaterials
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.FluentMaterials
+import dev.chrisbanes.haze.materials.HazeMaterials
 
-data class MenuItem(
-    val icon: ImageVector,
-    val title: String,
-    val onClick: () -> Unit
+@OptIn(
+    ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalHazeMaterialsApi::class, ExperimentalHazeApi::class
 )
-
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.PasswordList(
     placeHolderSize: SharedTransitionScope.PlaceHolderSize,
     modifier: Modifier = Modifier,
-    navController: NavController,
+    navigateToPasswordDetailScreenWithIdValue: (id: Int) -> Unit,
+    navigateToPasswordDetailScreenWithIdAs0: () -> Unit,
+    openFab: () -> Unit,
     viewModel: PasswordViewModel,
-    animatedVisibilityScope: AnimatedVisibilityScope,
-    dataStoreManager: DataStoreManager
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
 
     val passwordsList = viewModel.getPasswords.collectAsState(initial = listOf())
+    val hazeState = remember { HazeState() }
 
     Scaffold(
-        modifier = Modifier
-            .sharedBounds(
-                resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
-                placeHolderSize = placeHolderSize,
-                animatedVisibilityScope = animatedVisibilityScope,
-                sharedContentState = rememberSharedContentState(key = "main"),
-                boundsTransform = { _, _ ->
-                    spring(
-                        dampingRatio = 0.9f,
-                        stiffness = 380f
-                    )
-                }
-            ),
+        modifier = modifier,
         topBar = {
-            SearchBar(
+            CustomSearchBar(
+                modifier = Modifier
+                    .hazeEffect(
+                        state = hazeState,
+                        style = HazeMaterials.ultraThin(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        )
+                    ) {
+                        inputScale = HazeInputScale.Auto
+                        blurRadius = 100.dp
+                        progressive = HazeProgressive.verticalGradient(
+                            startIntensity = 0.2f, endIntensity = 0f
+                        )
+                    }
+                    .background (Color.Transparent),
                 viewModel = viewModel,
-                navController = navController
+                navigateToPasswordDetailScreenWithIdValue = navigateToPasswordDetailScreenWithIdValue
             )
         },
         floatingActionButton = {
-            FabUI(
-                dataStoreManager = dataStoreManager,
-                navController = navController
-            )
+            ExpandableFab(
+                animatedVisibilityScope = animatedVisibilityScope
+            ) {
+                openFab()
+            }
         }
     ) { innerPadding ->
-
-        Column(
-            modifier = modifier
-                .padding(top = innerPadding.calculateTopPadding())
-                .fillMaxSize()
+        Surface(
+            color = MaterialTheme.colorScheme.surfaceContainer
         ) {
-            if (passwordsList.value.isNotEmpty()) {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    item {
+            Column(
+                verticalArrangement = Arrangement.Top,
+                modifier = modifier
+                    .hazeSource(hazeState)
+                    .sharedBounds(
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        sharedContentState = rememberSharedContentState(key = "loginButton"),
+                        resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds
+                    )
+                    .fillMaxSize()
+            ) {
+                if (passwordsList.value.isNotEmpty()) {
+                    LazyColumn(
+                        contentPadding = innerPadding,
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) {
+                        item {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .sharedBounds(
+                                        placeHolderSize = placeHolderSize,
+                                        animatedVisibilityScope = animatedVisibilityScope,
+                                        sharedContentState = rememberSharedContentState(key = "newPassword"),
+                                        boundsTransform = { _, _ ->
+                                            spring(
+                                                dampingRatio = 0.9f,
+                                                stiffness = 380f
+                                            )
+                                        }
+                                    )
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        navigateToPasswordDetailScreenWithIdAs0()
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                            ) {
+                                Icon(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(100.dp))
+                                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                                        .padding(8.dp),
+                                    imageVector = Icons.Rounded.Add,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    text = "Add a password",
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                        items(passwordsList.value, key = { password -> password.id }) { password ->
+                            SwipeToDeleteContainer(
+                                placeHolderSize = placeHolderSize,
+                                animatedVisibilityScope = animatedVisibilityScope,
+                                password = password,
+                                viewModel = viewModel,
+                                navigateBackToPasswordScreenWithIdValue = {
+                                    navigateToPasswordDetailScreenWithIdValue(
+                                        password.id
+                                    )
+                                },
+                                onDelete = {
+                                    viewModel.deletePassword(password)
+                                },
+                            )
+                        }
+                    }
+                } else {
+                    Column(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    navController.navigate(
-                                        route = com.android.keysafe.navController.PasswordDetailScreen(
-                                            id = 0,
-                                        )
-                                    ) {
-                                        viewModel.passwordTitleState = ""
-                                        viewModel.passwordUserNameState = ""
-                                        viewModel.passwordPasswordState = ""
-                                        viewModel.passwordNoteState = ""
-                                        viewModel.textFieldEnabled = true
-                                        viewModel.cardExpanded = false
-                                    }
-                                }
-                                .padding(horizontal = 16.dp, vertical = 4.dp)
                                 .sharedBounds(
-                                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
                                     placeHolderSize = placeHolderSize,
                                     animatedVisibilityScope = animatedVisibilityScope,
-                                    sharedContentState = rememberSharedContentState(key = "bounds"),
+                                    sharedContentState = rememberSharedContentState(key = "newPassword"),
                                     boundsTransform = { _, _ ->
                                         spring(
                                             dampingRatio = 0.9f,
                                             stiffness = 380f
                                         )
                                     }
-                                ),
+                                )
+                                .fillMaxWidth()
+                                .clickable {
+                                    navigateToPasswordDetailScreenWithIdAs0()
+                                }
+                                .padding(innerPadding)
+                                .padding(horizontal = 16.dp),
                         ) {
                             Icon(
                                 modifier = Modifier
@@ -188,159 +221,20 @@ fun SharedTransitionScope.PasswordList(
                                 color = MaterialTheme.colorScheme.primary
                             )
                         }
-                    }
-                    items(passwordsList.value, key = { password -> password.id }) { password ->
-                        SwipeToDeleteContainer(
-                            placeHolderSize = placeHolderSize,
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            password = password,
-                            navController = navController,
-                            onDelete = {
-                                viewModel.deletePassword(password)
-                            },
-                            viewModel = viewModel
-                        )
-                    }
-                }
-            } else {
-                Column(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                navController.navigate(
-                                    route = com.android.keysafe.navController.PasswordDetailScreen(
-                                        id = 0
-                                    )
-                                ) {
-                                    viewModel.passwordTitleState = ""
-                                    viewModel.passwordUserNameState = ""
-                                    viewModel.passwordPasswordState = ""
-                                    viewModel.passwordNoteState = ""
-                                    viewModel.textFieldEnabled = true
-                                    viewModel.cardExpanded = false
-                                }
-                            }
-                            .padding(horizontal = 16.dp, vertical = 4.dp)
-                            .sharedBounds(
-                                animatedVisibilityScope = animatedVisibilityScope,
-                                sharedContentState = rememberSharedContentState(key = "bounds"),
-                                boundsTransform = { _, _ ->
-                                    spring(
-                                        dampingRatio = 0.9f,
-                                        stiffness = 380f
-                                    )
-                                }
-                            ),
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(100.dp))
-                                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                                .padding(8.dp),
-                            imageVector = Icons.Rounded.Add,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
 
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            text = "Add a password",
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-
-                    Column(
-                        verticalArrangement = Arrangement.Bottom,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Image(
-                            modifier = Modifier.padding(WindowInsets.navigationBars.asPaddingValues()),
-                            painter = painterResource(R.drawable.ic_undraw_empty_street_sfxm),
-                            contentDescription = null
-                        )
+                        Column(
+                            verticalArrangement = Arrangement.Bottom,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Image(
+                                modifier = Modifier,
+                                painter = painterResource(R.drawable.ic_undraw_empty_street_sfxm),
+                                contentDescription = null
+                            )
+                        }
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun FabUI(
-    modifier: Modifier = Modifier,
-    dataStoreManager: DataStoreManager,
-    navController: NavController
-) {
-
-    var showSubMenu by remember { mutableStateOf(false) }
-    val transition = updateTransition(targetState = showSubMenu, label = "FabTransition")
-    val rotation by transition.animateFloat(label = "rotation"){ if(it) 140f else 0f }
-    val scope = rememberCoroutineScope()
-    var biometric = dataStoreManager.getFromDataStore().collectAsState(initial = null)
-    val menuItems = listOf(
-        MenuItem(
-            icon = Icons.Rounded.Password,
-            title = "Reset Password",
-            onClick = {
-                scope.launch {
-                    dataStoreManager.clearDataStore()
-                    navController.navigate(route = RegisterScreen)
-                }
-            }
-        ),
-        MenuItem(
-            icon = Icons.Rounded.Fingerprint,
-            title = if(biometric.value?.biometricEnable == true)"Disable Biometric Auth" else "Enable Biometric Auth",
-            onClick = {
-                biometric.value?.biometricEnable  = !biometric.value?.biometricEnable!!
-            }
-        )
-    )
-
-    Column(
-        modifier = modifier
-            ,
-        verticalArrangement = Arrangement.Bottom,
-        horizontalAlignment = Alignment.End
-    ) {
-
-        AnimatedVisibility(
-            visible = showSubMenu,
-            enter = fadeIn() + slideInVertically(initialOffsetY = {it}) + expandHorizontally(
-                animationSpec = spring(dampingRatio = 0.8f, stiffness = 200f)) + expandVertically(),
-            exit = fadeOut() + slideOutVertically(
-                targetOffsetY = {it}) + shrinkHorizontally() + shrinkVertically()
-        ) {
-            LazyColumn(
-                modifier = Modifier
-                    .padding(top = 8.dp, start = 8.dp),
-                verticalArrangement = Arrangement.Bottom,
-                horizontalAlignment = Alignment.End,
-            ) {
-                items(menuItems) {
-                    MenuUI(
-                        menuItems = it
-                    )
-                }
-            }
-        }
-        FloatingActionButton(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-            onClick = {
-                showSubMenu = !showSubMenu
-            }
-        ) {
-            Icon(
-                modifier = Modifier
-                    .rotate(rotation)
-                    .size(28.dp),
-                imageVector = Icons.Rounded.Add,
-                contentDescription = null
-            )
         }
     }
 }
@@ -349,265 +243,4 @@ fun FabUI(
 @Composable
 private fun Prev() {
 
-}
-
-@Composable
-fun MenuUI(menuItems: MenuItem) {
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(bottom = 16.dp)) {
-        Text(
-            modifier = Modifier
-                .shadow(elevation = 8.dp, shape = RoundedCornerShape(12.dp))
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                .padding(8.dp)
-                .clickable(
-                    enabled = true,
-                    onClick = menuItems.onClick
-                ),
-            text = menuItems.title
-        )
-        Spacer(Modifier.width(8.dp))
-        SmallFloatingActionButton(
-            contentColor = MaterialTheme.colorScheme.primary,
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            onClick = menuItems.onClick
-        ) {
-            Icon(
-                imageVector = menuItems.icon,
-                contentDescription = menuItems.title
-            )
-        }
-    }
-
-}
-
-@OptIn(ExperimentalSharedTransitionApi::class)
-@Composable
-fun SharedTransitionScope.PasswordItem(
-    placeHolderSize: SharedTransitionScope.PlaceHolderSize,
-    modifier: Modifier,
-    password: Password,
-    onClick: () -> Unit,
-    animatedVisibilityScope: AnimatedVisibilityScope
-) {
-    val icon: ImageVector = when (password.title) {
-
-        "Facebook" -> Icons.Rounded.Facebook
-        "Instagram" -> Icons.Rounded.Facebook
-        "Twitter" -> Icons.Rounded.Facebook
-        "X" -> Icons.Rounded.Facebook
-        else -> Icons.Rounded.Lock
-
-    }
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .background(MaterialTheme.colorScheme.surface)
-            .fillMaxWidth()
-            .clickable(
-                onClick = {
-                    onClick()
-                }
-            )
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-            .sharedBounds(
-                resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
-                placeHolderSize = placeHolderSize,
-                animatedVisibilityScope = animatedVisibilityScope,
-                sharedContentState = rememberSharedContentState(key = password.title),
-                boundsTransform = { _, _ ->
-                    spring(
-                        dampingRatio = 0.9f,
-                        stiffness = 380f
-                    )
-                }
-            ),
-    ) {
-        Icon(
-            modifier = Modifier.padding(8.dp),
-            imageVector = icon,
-            contentDescription = null
-        )
-        Column(
-            modifier = Modifier
-                .padding(start = 8.dp)
-                .weight(1f)
-        ) {
-            Text(
-                modifier = Modifier.sharedElement(
-                    placeHolderSize = placeHolderSize,
-                    state = rememberSharedContentState(key = "title/${password.title}"),
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    boundsTransform = { _, _ ->
-                        spring(
-                            dampingRatio = 0.9f,
-                            stiffness = 380f
-                        )
-                    }
-                ),
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-                text = password.title
-            )
-            Text(
-                modifier = Modifier.sharedElement(
-                    placeHolderSize = placeHolderSize,
-                    state = rememberSharedContentState(key = "userName/${password.userName}"),
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    boundsTransform = { _, _ ->
-                        spring(
-                            dampingRatio = 0.9f,
-                            stiffness = 380f
-                        )
-                    }
-                ),
-                style = MaterialTheme.typography.bodySmall,
-                text = password.userName
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalSharedTransitionApi::class)
-@Composable
-fun SharedTransitionScope.SwipeToDeleteContainer(
-    placeHolderSize: SharedTransitionScope.PlaceHolderSize,
-    password: Password,
-    onDelete: (Password) -> Unit,
-    animationDuration: Int = 200,
-    navController: NavController,
-    animatedVisibilityScope: AnimatedVisibilityScope,
-    viewModel: PasswordViewModel
-) {
-
-    var showDialog by remember { mutableStateOf(false) }
-    var isDeleted by remember { mutableStateOf(false) }
-
-    val swipeToDismissBoxState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart) {
-                isDeleted = true
-                false
-            } else {
-                false
-            }
-        },
-        positionalThreshold = { width -> width * 0.6f }
-    )
-    if (showDialog) {
-        AlertDialog(
-            text = { Text(text = "Are you sure want to delete this password") },
-            onDismissRequest = { showDialog = false; isDeleted = false },
-            confirmButton = {
-                Row {
-                    Button(
-                        onClick = {
-                            onDelete(password)
-                        }
-                    ) {
-                        Text(text = "Yes")
-                    }
-                    Spacer(Modifier.width(10.dp))
-                    Button(
-                        onClick = {
-                            showDialog = false
-                            isDeleted = false
-                        }
-                    ) {
-                        Text(text = "No")
-                    }
-                }
-            }
-        )
-    }
-
-    LaunchedEffect(key1 = isDeleted) {
-        if (isDeleted) {
-            showDialog = true
-            delay(animationDuration.toLong())
-        } else {
-            showDialog = false
-            delay(animationDuration.toLong())
-        }
-    }
-
-    AnimatedVisibility(
-        visible = !isDeleted,
-        enter = expandVertically(
-            animationSpec = tween(durationMillis = animationDuration),
-            expandFrom = Alignment.Top
-        ) + fadeIn(),
-        exit = shrinkVertically(
-            animationSpec = tween(durationMillis = animationDuration),
-            shrinkTowards = Alignment.Top
-        ) + fadeOut()
-    ) {
-        SwipeToDismissBox(
-            state = swipeToDismissBoxState,
-            backgroundContent = {
-                DeleteBackground(
-                    swipeToDismissBoxState,
-                    animatedVisibilityScope
-                )
-            },
-            content = {
-                PasswordItem(
-                    placeHolderSize = placeHolderSize,
-                    modifier = Modifier,
-                    password = password,
-                    onClick = {
-                        val id = password.id
-                        navController.navigate(
-                            com.android.keysafe.navController.PasswordDetailScreen(
-                                id = id
-                            )
-                        ) {
-                            launchSingleTop = true
-                            viewModel.passwordTitleState = password.title
-                            viewModel.passwordUserNameState = password.userName
-                            viewModel.passwordPasswordState = password.password
-                            viewModel.passwordNoteState = password.note
-                            viewModel.textFieldEnabled = false
-                            viewModel.cardExpanded = false
-                        }
-                    },
-                    animatedVisibilityScope = animatedVisibilityScope
-                )
-            },
-            enableDismissFromStartToEnd = false,
-            enableDismissFromEndToStart = true
-        )
-    }
-}
-
-@Composable
-fun DeleteBackground(
-    swipeToDismissBoxState: SwipeToDismissBoxState,
-    animatedVisibilityScope: AnimatedVisibilityScope
-) {
-
-    val color =
-        if (swipeToDismissBoxState.dismissDirection == SwipeToDismissBoxValue.EndToStart) {
-            MaterialTheme.colorScheme.error
-        } else {
-            MaterialTheme.colorScheme.surface
-        }
-
-    Box(
-        contentAlignment = Alignment.CenterEnd,
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color)
-            .padding(horizontal = 16.dp)
-    ) {
-        Icon(
-            tint = MaterialTheme.colorScheme.onPrimary,
-            imageVector = Icons.Rounded.DeleteSweep,
-            contentDescription = null
-        )
-    }
 }

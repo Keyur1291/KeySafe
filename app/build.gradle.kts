@@ -3,17 +3,13 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
-    id("androidx.room")
-    id("org.jetbrains.kotlin.kapt")
+    id("com.google.devtools.ksp")
+
 }
 
 android {
     namespace = "com.android.keysafe"
     compileSdk = 35
-
-    room {
-        schemaDirectory("$projectDir/schemas")
-    }
 
     defaultConfig {
         applicationId = "com.android.keysafe"
@@ -59,6 +55,11 @@ android {
 
 dependencies {
 
+
+    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.haze.materials)
+    implementation(libs.haze)
+    implementation(libs.androidx.adaptive.navigation)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.datastore)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -66,7 +67,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    kapt(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.material.icons.extended.android)
     implementation(libs.bcprov.jdk16)
     implementation(libs.androidx.biometric)

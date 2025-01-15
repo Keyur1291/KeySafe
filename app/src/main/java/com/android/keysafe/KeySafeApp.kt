@@ -1,4 +1,4 @@
-package com.android.keysafe.components
+package com.android.keysafe
 
 import android.app.Application
 import com.android.keysafe.model.Graph

@@ -27,7 +27,6 @@ class PasswordViewModel(
 
     var authPasswordState by mutableStateOf("")
     var savePasswordState by mutableStateOf("")
-    var confSavePasswordState by mutableStateOf("")
 
     var cardExpanded by mutableStateOf(false)
     var includeLower by mutableStateOf(true)
@@ -55,14 +54,6 @@ class PasswordViewModel(
             .map { Random.nextInt(chars.size) }
             .map(chars::get)
             .joinToString("")
-    }
-
-    fun onSavePasswordChange(newSavePass: String) {
-        savePasswordState = newSavePass
-    }
-
-    fun onConfSavePasswordChange(newConfSavePass: String) {
-        confSavePasswordState = newConfSavePass
     }
 
     fun onAuthPasswordChange(newAuthPass: String) {

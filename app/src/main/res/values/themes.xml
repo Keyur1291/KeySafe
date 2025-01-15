@@ -2,4 +2,8 @@
 <resources>
 
     <style name="Theme.KeySafe" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.KeySafe.Starting" parent="Theme.SplashScreen">
+        <item name="postSplashScreenTheme">@style/Theme.KeySafe</item>
+    </style>
 </resources>

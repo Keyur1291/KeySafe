@@ -60,13 +60,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
-import androidx.navigation.NavController
 import androidx.window.core.layout.WindowWidthSizeClass
-import com.android.keysafe.components.BiometricPromptManager
-import com.android.keysafe.components.BiometricPromptManager.BiometricResult
-import com.android.keysafe.navController.PasswordListScreen
-import com.android.keysafe.R
 import com.android.keysafe.PasswordViewModel
+import com.android.keysafe.R
+import com.android.keysafe.view.components.BiometricPromptManager
+import com.android.keysafe.view.components.BiometricPromptManager.BiometricResult
 import com.android.keysafe.model.DataStoreManager
 import java.util.regex.Pattern
 
@@ -76,7 +74,7 @@ import java.util.regex.Pattern
 fun SharedTransitionScope.LoginScreen(
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
-    navController: NavController,
+    navigateToPasswordListScreen: () -> Unit,
     promptManager: BiometricPromptManager,
     viewModel: PasswordViewModel,
     dataStoreManager: DataStoreManager
@@ -90,9 +88,7 @@ fun SharedTransitionScope.LoginScreen(
             is BiometricResult.AuthenticationError -> result.error
             BiometricResult.AuthenticationFailed -> "Authentication failed"
             BiometricResult.AuthenticationNotSet -> "Authentication not set"
-            BiometricResult.AuthenticationSuccess -> {
-                navController.navigate(route = PasswordListScreen)
-            }
+            BiometricResult.AuthenticationSuccess -> navigateToPasswordListScreen()
 
             BiometricResult.FeatureUnavailable -> "Feature unavailable"
             BiometricResult.HardwareUnavailable -> "Hardware unavailable"
@@ -152,7 +148,7 @@ fun SharedTransitionScope.LoginScreen(
                         .sharedBounds(
                             resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
                             animatedVisibilityScope = animatedVisibilityScope,
-                            sharedContentState = rememberSharedContentState(key = "main"),
+                            sharedContentState = rememberSharedContentState(key = "registerButton"),
                             boundsTransform = { _, _ ->
                                 spring(
                                     dampingRatio = 0.8f,
@@ -170,10 +166,11 @@ fun SharedTransitionScope.LoginScreen(
                         modifier = Modifier
                             .weight(0.4f)
                             .fillMaxHeight(),
-                        navController = navController,
+                        navigateToPasswordListScreen = navigateToPasswordListScreen,
                         promptManager = promptManager,
                         viewModel = viewModel,
-                        dataStoreManager = dataStoreManager
+                        dataStoreManager = dataStoreManager,
+                        animatedVisibilityScope = animatedVisibilityScope
                     )
                 }
             }
@@ -190,7 +187,7 @@ fun SharedTransitionScope.LoginScreen(
                         .verticalScroll(rememberScrollState())
                         .sharedBounds(
                             animatedVisibilityScope = animatedVisibilityScope,
-                            sharedContentState = rememberSharedContentState(key = "main"),
+                            sharedContentState = rememberSharedContentState(key = "registerButton"),
                             boundsTransform = { _, _ ->
                                 spring(
                                     dampingRatio = 0.8f,
@@ -203,10 +200,11 @@ fun SharedTransitionScope.LoginScreen(
                     Spacer(Modifier.height(10.dp))
                     LoginBottomContent(
                         modifier = Modifier.fillMaxWidth(0.6f),
-                        navController = navController,
                         promptManager = promptManager,
                         viewModel = viewModel,
-                        dataStoreManager = dataStoreManager
+                        dataStoreManager = dataStoreManager,
+                        navigateToPasswordListScreen = navigateToPasswordListScreen,
+                        animatedVisibilityScope = animatedVisibilityScope
                     )
                 }
             }
@@ -223,7 +221,7 @@ fun SharedTransitionScope.LoginScreen(
                         .verticalScroll(rememberScrollState())
                         .sharedBounds(
                             animatedVisibilityScope = animatedVisibilityScope,
-                            sharedContentState = rememberSharedContentState(key = "main"),
+                            sharedContentState = rememberSharedContentState(key = "registerButton"),
                             boundsTransform = { _, _ ->
                                 spring(
                                     dampingRatio = 0.8f,
@@ -236,10 +234,11 @@ fun SharedTransitionScope.LoginScreen(
                     Spacer(Modifier.height(10.dp))
                     LoginBottomContent(
                         modifier = Modifier,
-                        navController = navController,
+                        navigateToPasswordListScreen = navigateToPasswordListScreen,
                         promptManager = promptManager,
                         viewModel = viewModel,
-                        dataStoreManager = dataStoreManager
+                        dataStoreManager = dataStoreManager,
+                        animatedVisibilityScope = animatedVisibilityScope
                     )
                 }
             }
@@ -258,10 +257,12 @@ fun TopContent(modifier: Modifier = Modifier) {
     )
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun LoginBottomContent(
+fun SharedTransitionScope.LoginBottomContent(
+    animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
-    navController: NavController,
+    navigateToPasswordListScreen: () -> Unit,
     promptManager: BiometricPromptManager,
     viewModel: PasswordViewModel,
     dataStoreManager: DataStoreManager
@@ -301,7 +302,7 @@ fun LoginBottomContent(
                         textFieldError = true
                     } else if (viewModel.authPasswordState == savedPassword!!.loginPassword) {
                         textFieldError = false
-                        navController.navigate(route = PasswordListScreen)
+                        navigateToPasswordListScreen()
                     } else {
                         supportingText = "Password does not match"
                         textFieldError = true
@@ -327,36 +328,49 @@ fun LoginBottomContent(
         Row(
             modifier = Modifier.fillMaxWidth(0.9f)
         ) {
-            OutlinedButton(
-                contentPadding = PaddingValues(16.dp),
-                modifier = Modifier
-                    .weight(1f),
-                shape = RoundedCornerShape(15.dp),
-                onClick = {
-                    promptManager.showBiometricPrompt(
-                        fragmentActivity = fragmentActivity,
-                        title = "Enter your screen lock",
-                        description = "To access your passwords, KeySafe needs to make sure it's you"
-                    )
+            val isBiometricEnabled = savedPassword?.biometricEnable ?: false
+            if (isBiometricEnabled) {
+                OutlinedButton(
+                    contentPadding = PaddingValues(16.dp),
+                    modifier = Modifier
+                        .weight(1f),
+                    shape = RoundedCornerShape(15.dp),
+                    onClick = {
+                        promptManager.showBiometricPrompt(
+                            fragmentActivity = fragmentActivity,
+                            title = "Enter your screen lock",
+                            description = "To access your passwords, KeySafe needs to make sure it's you"
+                        )
+                    }
+                ) {
+                    Text(text = "Use biometrics")
                 }
-            ) {
-                Text(text = "Use biometrics")
+                Spacer(Modifier.width(8.dp))
             }
-            Spacer(Modifier.width(8.dp))
             Button(
                 contentPadding = PaddingValues(16.dp),
                 modifier = Modifier
-                    .weight(1f),
+                    .weight(1f)
+                    .sharedBounds(
+                        sharedContentState = rememberSharedContentState("loginButton"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    ),
                 shape = RoundedCornerShape(15.dp),
                 onClick = {
                     if (viewModel.authPasswordState == "") {
+
                         supportingText = "Please enter the password"
                         textFieldError = true
+
                     } else if (viewModel.authPasswordState == savedPassword!!.loginPassword) {
+
                         textFieldError = false
-                        navController.navigate(route = PasswordListScreen)
+                        navigateToPasswordListScreen()
+                        viewModel.authPasswordState = ""
+
                     } else {
-                        supportingText = "Password does not match"
+
+                        supportingText = "Wrong Password"
                         textFieldError = true
                     }
                 }
@@ -367,6 +381,7 @@ fun LoginBottomContent(
     }
 
 }
+
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

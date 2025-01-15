@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.KeySafe.Starting" parent="Theme.KeySafe">
+        <item name="postSplashScreenTheme">@style/Theme.KeySafe</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/animated_splash</item>
+    </style>
+</resources>

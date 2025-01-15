@@ -12,7 +12,6 @@ data class Password(
     var password: String,
     var note: String
 ) {
-
     fun doesMatchSearchQuery(query: String): Boolean {
         val matchingCombination = listOf(
             "$title $userName" ,
@@ -23,5 +22,4 @@ data class Password(
             it.contains(query, ignoreCase = true)
         }
     }
-
 }

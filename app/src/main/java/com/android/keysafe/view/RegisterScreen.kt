@@ -47,10 +47,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.navigation.NavController
 import androidx.window.core.layout.WindowWidthSizeClass
-import com.android.keysafe.navController.LoginScreen
-import com.android.keysafe.navController.PasswordListScreen
 import com.android.keysafe.PasswordViewModel
 import com.android.keysafe.model.DataStoreManager
 import com.android.keysafe.model.DataStoreManager.Companion.BIOMETRIC
@@ -66,7 +63,7 @@ import java.util.regex.Pattern
 fun SharedTransitionScope.RegisterScreen(
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
-    navController: NavController,
+    navigateToLoginScreen: () -> Unit,
     viewModel: PasswordViewModel,
     preferenceDataStore: DataStore<Preferences>,
     dataStoreManager: DataStoreManager
@@ -79,15 +76,13 @@ fun SharedTransitionScope.RegisterScreen(
     val onSaveSuccess = { isPasswordSaved = true }
 
     LaunchedEffect(key1 = Unit) {
-        checkIsPasswordSaved(preferenceDataStore) { it ->
+        checkIsPasswordSaved(preferenceDataStore) {
             isPasswordSaved = it
         }
     }
 
     if (isPasswordSaved) {
-        navController.navigate(
-            route = LoginScreen,
-        )
+        navigateToLoginScreen()
     }
 
     Scaffold { innerPadding ->
@@ -103,18 +98,7 @@ fun SharedTransitionScope.RegisterScreen(
                         .fillMaxSize()
                         .padding(top = innerPadding.calculateTopPadding())
                         .padding(horizontal = 24.dp)
-                        .verticalScroll(rememberScrollState())
-                        .sharedBounds(
-                            resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            sharedContentState = rememberSharedContentState(key = "main"),
-                            boundsTransform = { _, _ ->
-                                spring(
-                                    dampingRatio = 0.8f,
-                                    stiffness = 280f
-                                )
-                            }
-                        ),
+                        .verticalScroll(rememberScrollState()),
                 ) {
                     TopContent(
                         modifier = Modifier
@@ -125,10 +109,11 @@ fun SharedTransitionScope.RegisterScreen(
                         modifier = Modifier
                             .weight(0.4f)
                             .fillMaxHeight(),
-                        navController = navController,
+                        navigateToLoginScreen = navigateToLoginScreen,
                         viewModel = viewModel,
                         scope = scope,
                         dataStoreManager = dataStoreManager,
+                        animatedVisibilityScope = animatedVisibilityScope
                     )
                 }
             }
@@ -142,26 +127,17 @@ fun SharedTransitionScope.RegisterScreen(
                         .fillMaxSize()
                         .padding(top = innerPadding.calculateTopPadding())
                         .padding(horizontal = 24.dp)
-                        .verticalScroll(rememberScrollState())
-                        .sharedBounds(
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            sharedContentState = rememberSharedContentState(key = "main"),
-                            boundsTransform = { _, _ ->
-                                spring(
-                                    dampingRatio = 0.8f,
-                                    stiffness = 280f
-                                )
-                            }
-                        ),
+                        .verticalScroll(rememberScrollState()),
                 ) {
                     TopContent(modifier = Modifier.fillMaxWidth(0.6f))
                     Spacer(Modifier.height(10.dp))
                     RegisterBottomContent(
                         modifier = Modifier.fillMaxWidth(0.6f),
-                        navController = navController,
+                        navigateToLoginScreen = navigateToLoginScreen,
                         viewModel = viewModel,
                         scope = scope,
                         dataStoreManager = dataStoreManager,
+                        animatedVisibilityScope = animatedVisibilityScope
                     )
                 }
             }
@@ -175,31 +151,21 @@ fun SharedTransitionScope.RegisterScreen(
                         .fillMaxSize()
                         .padding(top = innerPadding.calculateTopPadding())
                         .padding(horizontal = 24.dp)
-                        .verticalScroll(rememberScrollState())
-                        .sharedBounds(
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            sharedContentState = rememberSharedContentState(key = "main"),
-                            boundsTransform = { _, _ ->
-                                spring(
-                                    dampingRatio = 0.8f,
-                                    stiffness = 380f
-                                )
-                            }
-                        ),
+                        .verticalScroll(rememberScrollState()),
                 ) {
                     TopContent()
                     Spacer(Modifier.height(10.dp))
                     RegisterBottomContent(
                         modifier = Modifier,
-                        navController = navController,
+                        navigateToLoginScreen = navigateToLoginScreen,
                         viewModel = viewModel,
                         scope = scope,
                         dataStoreManager = dataStoreManager,
+                        animatedVisibilityScope = animatedVisibilityScope
                     )
                 }
             }
         }
-
     }
 }
 
@@ -214,16 +180,20 @@ suspend fun checkIsPasswordSaved(
     onResult(isPasswordSaved)
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun RegisterBottomContent(
+fun SharedTransitionScope.RegisterBottomContent(
+    animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
     viewModel: PasswordViewModel,
-    navController: NavController,
+    navigateToLoginScreen: () -> Unit,
     scope: CoroutineScope,
     dataStoreManager: DataStoreManager,
 ) {
 
-    var enabled by remember { mutableStateOf(false) }
+    var biometricBoolean by remember { mutableStateOf(false) }
+    var passwordState by remember { mutableStateOf("") }
+    var confPasswordState by remember { mutableStateOf("") }
 
     var passwordVisibility by remember { mutableStateOf(false) }
     val icon = if (passwordVisibility) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility
@@ -260,20 +230,26 @@ fun RegisterBottomContent(
             ),
             keyboardActions = KeyboardActions(
                 onDone = {
-                    if (viewModel.savePasswordState == "") {
+                    if (passwordState == "") {
+
                         supportingText = "Please enter the password"
                         textFieldError = true
-                    } else if (viewModel.savePasswordState.matches(passwordPattern.toRegex())) {
+
+                    } else if (passwordState.matches(passwordPattern.toRegex())) {
+
                         textFieldError = false
+                        supportingText = ""
+
                     } else {
-                        supportingText = "Password does not match"
+
+                        supportingText = "Password does not meet the minimum requirements"
                         textFieldError = true
                     }
                 }
             ),
             shape = RoundedCornerShape(15.dp),
-            value = viewModel.savePasswordState,
-            onValueChange = { viewModel.onSavePasswordChange(it) },
+            value = passwordState,
+            onValueChange = { passwordState = it },
             label = { Text(text = "Password") },
             singleLine = true,
             trailingIcon = {
@@ -296,20 +272,26 @@ fun RegisterBottomContent(
             ),
             keyboardActions = KeyboardActions(
                 onDone = {
-                    if (viewModel.confSavePasswordState == "") {
+                    if (confPasswordState == "") {
+
                         confSupportingText = "Please enter the password"
                         confTextFieldError = true
-                    } else if (viewModel.confSavePasswordState == viewModel.savePasswordState) {
+
+                    } else if (confPasswordState == passwordState) {
+
                         confTextFieldError = false
+                        confSupportingText = ""
+
                     } else {
+
                         confSupportingText = "Password does not match"
                         confTextFieldError = true
                     }
                 }
             ),
             shape = RoundedCornerShape(15.dp),
-            value = viewModel.confSavePasswordState,
-            onValueChange = { viewModel.onConfSavePasswordChange(it) },
+            value = confPasswordState,
+            onValueChange = { confPasswordState = it },
             label = { Text(text = "Confirm Password") },
             singleLine = true,
             trailingIcon = {
@@ -334,37 +316,54 @@ fun RegisterBottomContent(
                 text = "Enable Biometric Auth"
             )
             Switch(
-                checked = enabled,
-                onCheckedChange = {enabled = !enabled}
+                checked = biometricBoolean,
+                onCheckedChange = { biometricBoolean = !biometricBoolean }
             )
         }
         Spacer(Modifier.height(16.dp))
         Button(
             contentPadding = PaddingValues(16.dp),
-            modifier = Modifier.fillMaxWidth(0.9f),
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .sharedBounds(
+                    sharedContentState = rememberSharedContentState("registerButton"),
+                    animatedVisibilityScope = animatedVisibilityScope
+                    ),
             shape = RoundedCornerShape(15.dp),
             onClick = {
-                if (viewModel.savePasswordState == "") {
+                if (passwordState == "") {
+
                     supportingText = "Please enter the password"
                     textFieldError = true
-                } else if (viewModel.confSavePasswordState == "") {
+
+                } else if (!passwordState.matches(passwordPattern.toRegex())) {
+
+                    textFieldError = true
+                    supportingText = "Password does not meet the minimum requirement"
+
+                } else if (confPasswordState == "") {
+
                     confSupportingText = "Please confirm the password"
                     confTextFieldError = true
                 } else if (
-                    viewModel.savePasswordState.matches(passwordPattern.toRegex()) &&
-                    viewModel.savePasswordState == viewModel.confSavePasswordState
+                    passwordState.matches(passwordPattern.toRegex()) &&
+                    passwordState == confPasswordState
                 ) {
+
                     textFieldError = false
                     confTextFieldError = false
+                    supportingText = ""
+                    confSupportingText = ""
+
                     scope.launch {
                         dataStoreManager.saveToDataStore(
                             LoginPassword(
-                                loginPassword = viewModel.savePasswordState,
-                                biometricEnable = enabled
+                                loginPassword = passwordState,
+                                biometricEnable = biometricBoolean
                             )
                         )
                     }
-                    navController.navigate(route = PasswordListScreen)
+                    navigateToLoginScreen()
                 } else {
                     confSupportingText = "Password does not match"
                     confTextFieldError = true
