@@ -1,7 +1,8 @@
-package com.android.keysafe.model
+package com.android.keysafe.data.database.password
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.android.keysafe.data.model.Password
 
 @Database(
     entities = [Password::class],
@@ -9,6 +10,6 @@ import androidx.room.RoomDatabase
 )
 abstract class PasswordDatabase: RoomDatabase() {
 
-    abstract fun passwordDao(): PasswordDao
+    abstract val passwordDao: PasswordDao
 
 }

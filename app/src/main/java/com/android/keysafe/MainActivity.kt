@@ -1,41 +1,33 @@
 package com.android.keysafe
 
-import android.animation.ObjectAnimator
 import android.os.Bundle
-import android.view.View
-import android.view.animation.OvershootInterpolator
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
-import com.android.keysafe.view.components.BiometricPromptManager
-import com.android.keysafe.model.DataStoreManager
-import com.android.keysafe.model.preferenceDataStore
-import com.android.keysafe.navController.Destinations.PasswordDetailScreen
-import com.android.keysafe.navController.NavController
+import androidx.room.Room
+import com.android.keysafe.data.database.auth.DataStoreManager
+import com.android.keysafe.data.database.auth.preferenceDataStore
+import com.android.keysafe.data.database.password.PasswordDatabase
 import com.android.keysafe.ui.theme.KeySafeTheme
-import com.android.keysafe.view.components.CustomSearchBar
-import com.android.keysafe.view.components.ExpandableFab
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
+import com.android.keysafe.view.components.BiometricPromptManager
+import com.android.keysafe.view.navigation.NavController
+import com.android.keysafe.viewmodel.MainViewModel
 
 class MainActivity : FragmentActivity() {
 
@@ -43,15 +35,34 @@ class MainActivity : FragmentActivity() {
         BiometricPromptManager(this)
     }
 
-    private val viewModel by viewModels<PasswordViewModel>()
+    val database by lazy {
+        Room.databaseBuilder(
+            this,
+            PasswordDatabase::class.java,
+            "passwords.db"
+        )
+            .fallbackToDestructiveMigration()
+            .build()
+    }
 
-    @OptIn(ExperimentalMaterial3Api::class)
+    private val mainViewModel by viewModels<MainViewModel>(
+        factoryProducer = {
+            object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return MainViewModel(database.passwordDao) as T
+                }
+            }
+        }
+    )
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
         enableEdgeToEdge(
-
+            navigationBarStyle = SystemBarStyle.light(
+                darkScrim = Color.Transparent.value.toInt(),
+                scrim = Color.Transparent.value.toInt()
+            )
         )
         installSplashScreen()
         setContent {
@@ -59,34 +70,27 @@ class MainActivity : FragmentActivity() {
             val context = LocalContext.current
             val dataStoreManager = DataStoreManager(context = context)
             val navController = rememberNavController()
+            val passwordState by mainViewModel.passwordState.collectAsState()
 
             KeySafeTheme {
                 Scaffold { innerPaddings ->
                     Surface(
-                        color = MaterialTheme.colorScheme.surfaceContainer,
-                        modifier = Modifier
+                        modifier = Modifier.padding()
                     ) {
                         NavController(
-                            navController = navController,
-                            paddingValues = PaddingValues(
-                                top = innerPaddings.calculateTopPadding(),
-                                bottom = innerPaddings.calculateBottomPadding()
-                            ),
                             modifier = Modifier,
+                            paddingValues = innerPaddings,
                             promptManager = promptManager,
-                            viewModel = viewModel,
+                            passwordState = passwordState,
+                            preferenceDataStore = preferenceDataStore,
                             dataStoreManager = dataStoreManager,
-                            preferenceDataStore = preferenceDataStore
+                            navController = navController,
+                            onPasswordEvent = mainViewModel::onEvent
                         )
                     }
                 }
             }
         }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        finish()
     }
 }
 

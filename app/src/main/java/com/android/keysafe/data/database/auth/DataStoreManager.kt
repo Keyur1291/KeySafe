@@ -1,4 +1,4 @@
-package com.android.keysafe.model
+package com.android.keysafe.data.database.auth
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.android.keysafe.data.model.Auth
 import kotlinx.coroutines.flow.map
 
 
@@ -21,15 +22,15 @@ class DataStoreManager(val context: Context) {
         val BIOMETRIC = booleanPreferencesKey("BIOMETRIC")
     }
 
-    suspend fun saveToDataStore(loginPassword: LoginPassword) {
+    suspend fun saveToDataStore(auth: Auth) {
         context.preferenceDataStore.edit {
-            it[PASSWORD] = loginPassword.loginPassword
-            it[BIOMETRIC] = loginPassword.biometricEnable
+            it[PASSWORD] = auth.loginPassword
+            it[BIOMETRIC] = auth.biometricEnable
         }
     }
 
     fun getFromDataStore() = context.preferenceDataStore.data.map {
-        LoginPassword(
+        Auth(
             loginPassword = it[PASSWORD] ?: "",
             biometricEnable = it[BIOMETRIC] ?: true
         )

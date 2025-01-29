@@ -4,14 +4,16 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,19 +25,19 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.DeleteSweep
-import androidx.compose.material.icons.rounded.Facebook
-import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.AlertDialog
@@ -53,60 +55,70 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.graphics.BlurEffect
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.android.keysafe.PasswordViewModel
-import com.android.keysafe.model.Password
-import dev.chrisbanes.haze.HazeProgressive
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
+import com.android.keysafe.R
+import com.android.keysafe.data.model.Password
+import com.android.keysafe.di.PasswordEvent
+import com.android.keysafe.di.PasswordState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun CustomSearchBar(
     modifier: Modifier = Modifier,
-    viewModel: PasswordViewModel,
+    childModifier: Modifier = Modifier,
     navigateToPasswordDetailScreenWithIdValue: (id: Int) -> Unit,
+    passwordState: PasswordState
 ) {
 
-    val passwordsList = viewModel.getPasswords.collectAsState(initial = listOf())
+    val coroutineScope = rememberCoroutineScope()
+    val bringIntoViewRequester = remember { BringIntoViewRequester() }
     var searchText by remember { mutableStateOf("") }
     var isSearching by remember { mutableStateOf(false) }
+    val paddings  by animateDpAsState(
+        targetValue = if(!isSearching) 24.dp else 0.dp,
+        animationSpec = tween(),
+        label = "searchLabel"
+    )
 
-    Box(
+    Box (
         contentAlignment = Alignment.TopCenter,
         modifier = modifier
-            .fillMaxWidth()
-            .background(Color.Transparent)
+            .fillMaxWidth(),
     ) {
         SearchBar(
+            shape = RoundedCornerShape(15.dp),
             colors = SearchBarDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(0.4f)
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
             ),
-            modifier = Modifier,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = paddings),
             inputField = {
                 SearchBarDefaults.InputField(
+                    modifier = childModifier,
                     query = searchText,
                     onQueryChange = { searchText = it },
                     onSearch = {
@@ -164,11 +176,24 @@ fun CustomSearchBar(
                     .padding(WindowInsets.displayCutout.asPaddingValues())
             ) {
 
-                items(passwordsList.value.filter { it.doesMatchSearchQuery(searchText) }) { password ->
+                items(passwordState.passwordsList.filter { it.doesMatchSearchQuery(searchText) }) { password ->
                     SearchItem(
+                        modifier = Modifier
+                            .bringIntoViewRequester(bringIntoViewRequester)
+                            .onFocusEvent { focusState ->
+                                if (focusState.isFocused) {
+                                    coroutineScope.launch {
+                                        bringIntoViewRequester.bringIntoView()
+                                    }
+                                }
+                            },
                         password = password,
                         onClick = {
                             navigateToPasswordDetailScreenWithIdValue(password.id)
+                            passwordState.title = password.title
+                            passwordState.userName = password.userName
+                            passwordState.password = password.password
+                            passwordState.note = password.note
                         }
                     )
                 }
@@ -216,18 +241,27 @@ fun SearchItem(
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.ExpandableFab(
+    modifier: Modifier = Modifier,
     animatedVisibilityScope: AnimatedVisibilityScope,
     onClick: () -> Unit
 ) {
+
+    val hapticFeedbackManager = LocalHapticFeedback.current
+
     FloatingActionButton(
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        modifier = Modifier
+        modifier = modifier
             .sharedBounds(
                 resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
                 sharedContentState = rememberSharedContentState(key = "expandFab"),
                 animatedVisibilityScope = animatedVisibilityScope
             ),
-        onClick = onClick
+        onClick = {
+            hapticFeedbackManager.performHapticFeedback(
+                HapticFeedbackType.LongPress
+            )
+            onClick()
+        }
     ) {
         Icon(
             modifier = Modifier.sharedElement(
@@ -249,27 +283,33 @@ fun SharedTransitionScope.PasswordItem(
     onClick: () -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
-    val icon: ImageVector = when (password.title) {
 
-        "Facebook" -> Icons.Rounded.Facebook
-        "Instagram" -> Icons.Rounded.Facebook
-        "Twitter" -> Icons.Rounded.Facebook
-        "X" -> Icons.Rounded.Facebook
-        else -> Icons.Rounded.Lock
+    val icon: Int = when (password.title) {
+
+        "Facebook" -> R.drawable.icons8_facebook
+        "Instagram" -> R.drawable.icons8_instagram
+        "Twitter" -> R.drawable.icons8_twitter__1_
+        "X" -> R.drawable.icons8_twitter__1_
+        "Telegram" -> R.drawable.icons8_telegram
+        "Discord" -> R.drawable.icons8_discord
+        "Snapchat" -> R.drawable.snapchat_logo_svgrepo_com
+        "Amazon" -> R.drawable.icons8_amazon
+        "Google" -> R.drawable.icons8_google
+        "Github" -> R.drawable.github_svgrepo_com
+        "LinkedIn" -> R.drawable.icons8_linkedin
+        "Pinterest" -> R.drawable.icons8_pinterest
+        "Tiktok" -> R.drawable.icons8_tiktok
+        "Whatsapp" -> R.drawable.icons8_whatsapp
+        "Tinder" -> R.drawable.icons8_tinder
+        "Microsoft" -> R.drawable.icons8_microsoft
+        "KeySafe" -> R.drawable.encrypted_24px
+        else -> R.drawable.round_gpp_good_24
 
     }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
-            .background(MaterialTheme.colorScheme.surfaceContainer)
-            .fillMaxWidth()
-            .clickable(
-                onClick = {
-                    onClick()
-                }
-            )
-            .padding(horizontal = 16.dp, vertical = 4.dp)
             .sharedBounds(
                 resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
                 placeHolderSize = placeHolderSize,
@@ -281,11 +321,24 @@ fun SharedTransitionScope.PasswordItem(
                         stiffness = 380f
                     )
                 }
-            ),
+            )
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .clickable(
+                onClick = {
+                    onClick()
+                }
+            )
+            .padding(horizontal = 16.dp),
     ) {
-        Icon(
-            modifier = Modifier.padding(8.dp),
-            imageVector = icon,
+        Image(
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier
+                .padding(top = 8.dp, bottom = 8.dp, end = 8.dp)
+                .clip(RoundedCornerShape(15.dp))
+                .size(60.dp),
+            painter = painterResource(icon),
             contentDescription = null
         )
         Column(
@@ -337,9 +390,10 @@ fun SharedTransitionScope.SwipeToDeleteContainer(
     animationDuration: Int = 200,
     navigateBackToPasswordScreenWithIdValue: (id: Int) -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    viewModel: PasswordViewModel
+    onPasswordEvent: (PasswordEvent) -> Unit
 ) {
 
+    val hapticFeedBackManager = LocalHapticFeedback.current
     var showDialog by remember { mutableStateOf(false) }
     var isDeleted by remember { mutableStateOf(false) }
 
@@ -347,12 +401,15 @@ fun SharedTransitionScope.SwipeToDeleteContainer(
         confirmValueChange = { value ->
             if (value == SwipeToDismissBoxValue.EndToStart) {
                 isDeleted = true
+                hapticFeedBackManager.performHapticFeedback(
+                    HapticFeedbackType.LongPress
+                )
                 false
             } else {
                 false
             }
         },
-        positionalThreshold = { width -> width * 0.6f }
+        positionalThreshold = { width -> width * 2.3f },
     )
     if (showDialog) {
         AlertDialog(
@@ -391,16 +448,15 @@ fun SharedTransitionScope.SwipeToDeleteContainer(
 
     AnimatedVisibility(
         visible = !isDeleted,
-        enter = expandVertically(
+        enter = slideInHorizontally (
             animationSpec = tween(durationMillis = animationDuration),
-            expandFrom = Alignment.Top
-        ) + fadeIn(),
-        exit = shrinkVertically(
+        ) + expandVertically(),
+        exit = slideOutHorizontally(
             animationSpec = tween(durationMillis = animationDuration),
-            shrinkTowards = Alignment.Top
-        ) + fadeOut()
+        ) + shrinkVertically()
     ) {
         SwipeToDismissBox(
+            modifier = Modifier,
             state = swipeToDismissBoxState,
             backgroundContent = {
                 DeleteBackground(
@@ -415,12 +471,10 @@ fun SharedTransitionScope.SwipeToDeleteContainer(
                     password = password,
                     onClick = {
                         navigateBackToPasswordScreenWithIdValue(password.id)
-                        viewModel.passwordTitleState = password.title
-                        viewModel.passwordUserNameState = password.userName
-                        viewModel.passwordPasswordState = password.password
-                        viewModel.passwordNoteState = password.note
-                        viewModel.textFieldEnabled = false
-                        viewModel.cardExpanded = false
+                        onPasswordEvent(PasswordEvent.SetTitle(password.title))
+                        onPasswordEvent(PasswordEvent.SetUserName(password.userName))
+                        onPasswordEvent(PasswordEvent.SetPassword(password.password))
+                        onPasswordEvent(PasswordEvent.SetNote(password.note))
                     },
                     animatedVisibilityScope = animatedVisibilityScope
                 )
@@ -471,6 +525,7 @@ fun PasswordTextField(
     visualTransformation: VisualTransformation,
     icon: ImageVector,
     icon2: ImageVector,
+    leadingIcon: ImageVector,
     passwordVisibility: () -> Unit,
     imeAction: ImeAction,
     isError: Boolean,
@@ -480,14 +535,16 @@ fun PasswordTextField(
 
 ) {
 
+    val hapticFeedbackManager = LocalHapticFeedback.current
+
     OutlinedTextField(
+        modifier = modifier.fillMaxWidth(),
         supportingText = { Text(text = supportingText) },
         isError = isError,
         keyboardOptions = KeyboardOptions(
             keyboardType = keyboardType,
             imeAction = imeAction
         ),
-        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(15.dp),
         colors = OutlinedTextFieldDefaults.colors(
             disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -505,15 +562,31 @@ fun PasswordTextField(
         singleLine = singleLine,
         minLines = minLines,
         visualTransformation = visualTransformation,
+        leadingIcon = {
+            Icon(
+                imageVector = leadingIcon,
+                contentDescription = null
+            )
+        },
         trailingIcon = {
             Row {
                 IconButton(
-                    onClick = passwordVisibility
+                    onClick = {
+                        hapticFeedbackManager.performHapticFeedback(
+                            HapticFeedbackType.LongPress
+                        )
+                        passwordVisibility()
+                    }
                 ) {
                     Icon(imageVector = icon, contentDescription = null)
                 }
                 IconButton(
-                    onClick = clipString
+                    onClick = {
+                        hapticFeedbackManager.performHapticFeedback(
+                            HapticFeedbackType.LongPress
+                        )
+                        clipString()
+                    }
                 ) {
                     Icon(imageVector = icon2, contentDescription = null)
                 }
@@ -533,6 +606,7 @@ fun OtherTextField(
     minLines: Int = 1,
     visualTransformation: VisualTransformation,
     icon: ImageVector,
+    leadingIcon: ImageVector,
     imeAction: ImeAction,
     isError: Boolean,
     supportingText: String,
@@ -541,14 +615,15 @@ fun OtherTextField(
 
 ) {
 
+    val hapticFeedbackManager = LocalHapticFeedback.current
     OutlinedTextField(
+        modifier = modifier.fillMaxWidth(),
         supportingText = { Text(text = supportingText) },
         isError = isError,
         keyboardOptions = KeyboardOptions(
             keyboardType = keyboardType,
             imeAction = imeAction
         ),
-        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(15.dp),
         colors = OutlinedTextFieldDefaults.colors(
             disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -566,9 +641,20 @@ fun OtherTextField(
         singleLine = singleLine,
         minLines = minLines,
         visualTransformation = visualTransformation,
+        leadingIcon = {
+            Icon(
+                imageVector = leadingIcon,
+                contentDescription = null
+            )
+        },
         trailingIcon = {
             IconButton(
-                onClick = clipString
+                onClick = {
+                    hapticFeedbackManager.performHapticFeedback(
+                        HapticFeedbackType.LongPress
+                    )
+                    clipString()
+                }
             ) {
                 Icon(imageVector = icon, contentDescription = null)
             }

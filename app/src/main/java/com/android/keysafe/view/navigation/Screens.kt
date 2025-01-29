@@ -14,6 +14,9 @@ sealed class SubGraph {
 sealed class Destinations {
 
     @Serializable
+    data object ListPane: Destinations()
+
+    @Serializable
     data object LoginScreen: Destinations()
 
     @Serializable

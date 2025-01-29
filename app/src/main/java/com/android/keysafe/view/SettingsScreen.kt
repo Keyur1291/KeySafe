@@ -3,7 +3,6 @@ package com.android.keysafe.view
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -38,17 +38,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.android.keysafe.model.DataStoreManager
-import com.android.keysafe.model.LoginPassword
+import com.android.keysafe.data.database.auth.DataStoreManager
+import com.android.keysafe.data.model.Auth
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun SharedTransitionScope.SettingsScreen(
+fun SettingsScreen(
+    sharedTransitionScope: SharedTransitionScope,
     navigateBackToPasswordListScreen: () -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
@@ -56,6 +59,7 @@ fun SharedTransitionScope.SettingsScreen(
     navigateBackToRegisterScreen: () -> Unit
 ) {
 
+    val hapticFeedbackManager = LocalHapticFeedback.current
     val haze = remember { HazeState() }
     val scope = rememberCoroutineScope()
     var showDialog by remember { mutableStateOf(false) }
@@ -68,8 +72,11 @@ fun SharedTransitionScope.SettingsScreen(
                 Row {
                     Button(
                         onClick = {
+                            hapticFeedbackManager.performHapticFeedback(
+                                HapticFeedbackType.LongPress
+                            )
                             scope.launch { dataStoreManager.clearDataStore() }
-                            showDialog= false
+                            showDialog = false
                             navigateBackToRegisterScreen()
                         }
                     ) {
@@ -77,7 +84,12 @@ fun SharedTransitionScope.SettingsScreen(
                     }
                     Spacer(Modifier.width(10.dp))
                     Button(
-                        onClick = { showDialog = false }
+                        onClick = {
+                            hapticFeedbackManager.performHapticFeedback(
+                                HapticFeedbackType.LongPress
+                            )
+                            showDialog = false
+                        }
                     ) {
                         Text(text = "No")
                     }
@@ -89,67 +101,91 @@ fun SharedTransitionScope.SettingsScreen(
     val savedPassword by dataStoreManager.getFromDataStore().collectAsState(initial = null)
     val loginPassword = savedPassword?.loginPassword
     var biometricBoolean = savedPassword?.biometricEnable ?: false
-    val biometricStatus = if(biometricBoolean) "Enabled" else "Disabled"
+    val biometricStatus = if (biometricBoolean) "Enabled" else "Disabled"
     val menuItems = listOf(
-        SettingItem("Unlock with biometric", biometricStatus, Icons.Rounded.Fingerprint, onClick = {
+        SettingItem(
+            "Unlock with biometric", biometricStatus, Icons.Rounded.Fingerprint, onClick = {
                 biometricBoolean = !biometricBoolean
+                hapticFeedbackManager.performHapticFeedback(
+                    HapticFeedbackType.LongPress
+                )
                 scope.launch {
-                    dataStoreManager.saveToDataStore(LoginPassword(loginPassword.toString(), biometricBoolean))
+                    dataStoreManager.saveToDataStore(
+                        Auth(
+                            loginPassword.toString(),
+                            biometricBoolean
+                        )
+                    )
                 }
             }, modifier = Modifier
         ),
-        SettingItem("Reset Password", "Delete the old password and set a new one.", Icons.Rounded.Settings,
-            onClick = { showDialog = true },
-            modifier = Modifier.sharedElement(
-                rememberSharedContentState("settingsIcon"),
-                animatedVisibilityScope = animatedVisibilityScope
-            )
+        SettingItem(
+            "Reset Password", "Delete the old password and set a new one.", Icons.Rounded.Settings,
+            onClick = {
+                showDialog = true
+                hapticFeedbackManager.performHapticFeedback(
+                    HapticFeedbackType.LongPress
+                )
+            },
+            modifier = Modifier
         )
     )
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                modifier = Modifier.hazeEffect(haze),
-                title = {
-                    Text(
-                        text = "Settings",
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = navigateBackToPasswordListScreen
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                            contentDescription = null
+    with(sharedTransitionScope) {
+
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    modifier = Modifier.hazeEffect(haze),
+                    title = {
+                        Text(
+                            text = "Settings",
+                            style = MaterialTheme.typography.titleLarge
                         )
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                hapticFeedbackManager.performHapticFeedback(
+                                    HapticFeedbackType.LongPress
+                                )
+                                navigateBackToPasswordListScreen()
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                contentDescription = null
+                            )
+                        }
                     }
-                }
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start,
-            modifier = modifier
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                .fillMaxSize()
-                .padding(innerPadding)
-                .sharedBounds(
-                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
-                    sharedContentState = rememberSharedContentState(key = "expandFab"),
-                    animatedVisibilityScope = animatedVisibilityScope
-                ),
-        ) {
-            LazyColumn(
-                modifier = Modifier.skipToLookaheadSize()
+                )
+            }
+        ) { innerPadding ->
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                modifier = modifier
             ) {
-                items(menuItems) { item ->
-                    SettingsMenuItem(
-                        settingItem = item
-                    )
+                Column(
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.Start,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .sharedBounds(
+                            resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
+                            sharedContentState = rememberSharedContentState(key = "expandFab"),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        ),
+                ) {
+                    LazyColumn(
+                        modifier = Modifier.skipToLookaheadSize()
+                    ) {
+                        items(menuItems) { item ->
+                            SettingsMenuItem(
+                                settingItem = item
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -203,6 +239,12 @@ fun SettingsMenuItem(
 @Composable
 private fun SettingPreview() {
 
-    val settingItem = SettingItem("Biometric", "Enable", Icons.Rounded.Fingerprint, onClick = {}, modifier = Modifier)
+    val settingItem = SettingItem(
+        "Biometric",
+        "Enable",
+        Icons.Rounded.Fingerprint,
+        onClick = {},
+        modifier = Modifier
+    )
 
 }
