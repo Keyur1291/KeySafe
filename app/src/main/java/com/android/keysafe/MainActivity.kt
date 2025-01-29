@@ -1,6 +1,5 @@
 package com.android.keysafe
 
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -24,20 +23,13 @@ import androidx.navigation.compose.rememberNavController
 import androidx.room.Room
 import com.android.keysafe.data.database.auth.DataStoreManager
 import com.android.keysafe.data.database.auth.preferenceDataStore
-import com.android.keysafe.data.database.password.PassPhrase
 import com.android.keysafe.data.database.password.PasswordDatabase
 import com.android.keysafe.ui.theme.KeySafeTheme
 import com.android.keysafe.view.components.BiometricPromptManager
 import com.android.keysafe.view.navigation.NavController
 import com.android.keysafe.viewmodel.MainViewModel
-import net.sqlcipher.database.SupportFactory
 
 class MainActivity : FragmentActivity() {
-
-
-    private fun provideUserDatabasePassphrase(context: Context) = PassPhrase(context)
-
-    private fun provideSupportFactory(passPhrase: PassPhrase) = SupportFactory(passPhrase.getPassphrase())
 
     private val promptManager by lazy {
         BiometricPromptManager(this)
