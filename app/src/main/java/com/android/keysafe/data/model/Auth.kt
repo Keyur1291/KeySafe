@@ -1,6 +1,6 @@
-package com.android.keysafe.model
+package com.android.keysafe.data.model
 
-data class LoginPassword(
+data class Auth(
     val loginPassword: String,
     var biometricEnable: Boolean
 )

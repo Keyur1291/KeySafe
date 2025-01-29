@@ -1,4 +1,4 @@
-package com.android.keysafe.model
+package com.android.keysafe.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

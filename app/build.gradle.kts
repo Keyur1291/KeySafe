@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.com.google.devtools.ksp)
 
 }
 
@@ -55,11 +55,15 @@ android {
 
 dependencies {
 
-
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.adaptive.android)
+    implementation(libs.androidx.autofill)
+    implementation(libs.androidx.security.crypto)
+    implementation (libs.android.database.sqlcipher)
+    implementation (libs.androidx.sqlite)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.haze.materials)
     implementation(libs.haze)
-    implementation(libs.androidx.adaptive.navigation)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.datastore)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -75,9 +79,6 @@ dependencies {
     implementation(libs.androidx.animation)
     implementation(libs.androidx.ui.text.google.fonts)
     implementation(libs.androidx.material3.window.size.android)
-    implementation(libs.androidx.adaptive.android)
-    implementation(libs.android.database.sqlcipher)
-
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
