@@ -11,6 +11,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,6 +26,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -67,6 +69,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusEvent
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
@@ -84,13 +87,17 @@ import com.android.keysafe.di.PasswordState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
+    ExperimentalSharedTransitionApi::class
+)
 @Composable
 fun CustomSearchBar(
     modifier: Modifier = Modifier,
     childModifier: Modifier = Modifier,
     navigateToPasswordDetailScreenWithIdValue: (id: Int) -> Unit,
-    passwordState: PasswordState
+    passwordState: PasswordState,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
 
     val coroutineScope = rememberCoroutineScope()
@@ -102,16 +109,49 @@ fun CustomSearchBar(
         animationSpec = tween(),
         label = "searchLabel"
     )
+    val color = MaterialTheme.colorScheme.surfaceVariant
 
     Box (
         contentAlignment = Alignment.TopCenter,
         modifier = modifier
             .fillMaxWidth(),
     ) {
+        with(sharedTransitionScope) {
+            Canvas(
+                modifier = modifier
+                    .sharedElement(
+                        state = rememberSharedContentState("HomeLogo"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
+                    .fillMaxWidth()
+                    .height(100.dp)
+            ) {
+                val width = this.size.width
+                val height = this.size.height
+
+                // Create a Path for the rectangle with an increased curve
+                val path = Path().apply {
+                    moveTo(0f, 0f) // Top-left corner
+                    lineTo(width, 0f) // Top-right corner
+                    lineTo(width, height) // Right side slightly above bottom-right corner
+                    quadraticTo(
+                        width / 2, height + 80f, // Control point for a deeper curve
+                        0f, height  // End at the bottom-left corner
+                    )
+                    close() // Complete the path
+                }
+
+                // Draw the path
+                drawPath(
+                    path = path,
+                    color = color
+                )
+            }
+        }
         SearchBar(
             shape = RoundedCornerShape(15.dp),
             colors = SearchBarDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
             ),
             modifier = Modifier
                 .fillMaxWidth()

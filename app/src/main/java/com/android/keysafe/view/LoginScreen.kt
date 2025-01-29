@@ -13,20 +13,8 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideIn
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -38,9 +26,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -51,7 +36,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.LockOpen
-import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.Button
@@ -74,32 +58,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import androidx.window.core.layout.WindowWidthSizeClass
+import com.android.keysafe.data.database.auth.DataStoreManager
 import com.android.keysafe.view.components.BiometricPromptManager
 import com.android.keysafe.view.components.BiometricPromptManager.BiometricResult
-import com.android.keysafe.data.database.auth.DataStoreManager
 
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -305,11 +276,15 @@ fun LoginTopContent(
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
 
-    val color = MaterialTheme.colorScheme.primary
+    val color = MaterialTheme.colorScheme.surfaceVariant
 
     with(sharedTransitionScope) {
         Canvas(
             modifier = modifier
+                .sharedElement(
+                    state = rememberSharedContentState("HomeLogo"),
+                    animatedVisibilityScope = animatedVisibilityScope
+                )
                 .sharedElement(
                     state = rememberSharedContentState("Logo"),
                     animatedVisibilityScope = animatedVisibilityScope
@@ -326,7 +301,7 @@ fun LoginTopContent(
                 lineTo(width, 0f) // Top-right corner
                 lineTo(width, height) // Right side slightly above bottom-right corner
                 quadraticTo(
-                    width / 2, height + 500f, // Control point for a deeper curve
+                    width / 2, height + 300f, // Control point for a deeper curve
                     0f, height  // End at the bottom-left corner
                 )
                 close() // Complete the path
@@ -352,7 +327,7 @@ fun LoginBottomContent(
     dataStoreManager: DataStoreManager
 ) {
 
-    val fragmentActivity = LocalActivity.current as FragmentActivity
+    val fragmentActivity = LocalContext.current as FragmentActivity
 
     val savedPassword by dataStoreManager.getFromDataStore().collectAsState(initial = null)
 

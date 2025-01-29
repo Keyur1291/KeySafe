@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -80,7 +81,9 @@ fun PasswordList(
                     modifier = Modifier,
                     childModifier = Modifier.clip(RoundedCornerShape(15.dp)),
                     navigateToPasswordDetailScreenWithIdValue = navigateToPasswordDetailScreenWithIdValue,
-                    passwordState = passwordState
+                    passwordState = passwordState,
+                    sharedTransitionScope = sharedTransitionScope,
+                    animatedVisibilityScope = animatedVisibilityScope
                 )
             },
             floatingActionButton = {
@@ -139,8 +142,10 @@ fun PasswordList(
                                     Icon(
                                         modifier = Modifier
                                             .padding(8.dp)
+                                            .size(42.dp)
                                             .clip(RoundedCornerShape(15.dp))
-                                            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                                            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                                            .padding(8.dp),
                                         imageVector = Icons.Rounded.Add,
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.primary

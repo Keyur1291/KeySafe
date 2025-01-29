@@ -211,7 +211,7 @@ fun RegisterTopContent(
     sharedTransitionScope: SharedTransitionScope
 ) {
 
-    val color = MaterialTheme.colorScheme.primary
+    val color = MaterialTheme.colorScheme.surfaceVariant
 
     with(sharedTransitionScope) {
         Canvas(
@@ -232,7 +232,7 @@ fun RegisterTopContent(
                 lineTo(width, 0f) // Top-right corner
                 lineTo(width, height) // Right side slightly above bottom-right corner
                 quadraticTo(
-                    width / 2, height + 500f, // Control point for a deeper curve
+                    width / 2, height + 300f, // Control point for a deeper curve
                     0f, height  // End at the bottom-left corner
                 )
                 close() // Complete the path
