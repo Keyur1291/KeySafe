@@ -136,7 +136,6 @@ fun CustomSearchBar(
                         state = rememberSharedContentState("HomeLogo"),
                         animatedVisibilityScope = animatedVisibilityScope
                     )
-                    .shadow(42.dp, clip = false)
                     .drawBehind {
                         val width = this.size.width
                         val height = this.size.height+30f

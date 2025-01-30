@@ -151,7 +151,7 @@ fun PasswordDetailScreen(
                             state = rememberSharedContentState("DetailLogo"),
                             animatedVisibilityScope = animatedVisibilityScope
                         )
-                        .shadow(42.dp, clip = false)
+                        .shadow(24.dp, clip = false)
                         .drawBehind {
                             val width = this.size.width
                             val height = this.size.height

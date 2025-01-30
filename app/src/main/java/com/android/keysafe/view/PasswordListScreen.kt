@@ -82,6 +82,7 @@ fun PasswordList(
         Scaffold(
             topBar = {
                 CustomSearchBar(
+                    modifier = Modifier,
                     childModifier = Modifier.clip(RoundedCornerShape(15.dp)),
                     navigateToPasswordDetailScreenWithIdValue = navigateToPasswordDetailScreenWithIdValue,
                     passwordState = passwordState,
@@ -138,7 +139,7 @@ fun PasswordList(
                                         .padding(
                                             start = 16.dp,
                                             end = 16.dp,
-                                            top = 16.dp,
+                                            top = 24.dp,
                                             bottom = 8.dp
                                         ),
                                 ) {
