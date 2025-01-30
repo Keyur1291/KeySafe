@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -68,6 +69,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -100,8 +103,6 @@ fun CustomSearchBar(
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
 
-    val coroutineScope = rememberCoroutineScope()
-    val bringIntoViewRequester = remember { BringIntoViewRequester() }
     var searchText by remember { mutableStateOf("") }
     var isSearching by remember { mutableStateOf(false) }
     val paddings  by animateDpAsState(
@@ -117,125 +118,123 @@ fun CustomSearchBar(
             .fillMaxWidth(),
     ) {
         with(sharedTransitionScope) {
-            Canvas(
-                modifier = modifier
+            SearchBar(
+                shape = RoundedCornerShape(15.dp),
+                colors = SearchBarDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                ),
+                modifier = Modifier
+                    .sharedElement(
+                        state = rememberSharedContentState("SettingLogo"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
+                    .sharedElement(
+                        state = rememberSharedContentState("DetailLogo"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
                     .sharedElement(
                         state = rememberSharedContentState("HomeLogo"),
                         animatedVisibilityScope = animatedVisibilityScope
                     )
-                    .fillMaxWidth()
-                    .height(100.dp)
-            ) {
-                val width = this.size.width
-                val height = this.size.height
+                    .shadow(42.dp, clip = false)
+                    .drawBehind {
+                        val width = this.size.width
+                        val height = this.size.height+30f
 
-                // Create a Path for the rectangle with an increased curve
-                val path = Path().apply {
-                    moveTo(0f, 0f) // Top-left corner
-                    lineTo(width, 0f) // Top-right corner
-                    lineTo(width, height) // Right side slightly above bottom-right corner
-                    quadraticTo(
-                        width / 2, height + 80f, // Control point for a deeper curve
-                        0f, height  // End at the bottom-left corner
-                    )
-                    close() // Complete the path
-                }
-
-                // Draw the path
-                drawPath(
-                    path = path,
-                    color = color
-                )
-            }
-        }
-        SearchBar(
-            shape = RoundedCornerShape(15.dp),
-            colors = SearchBarDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = paddings),
-            inputField = {
-                SearchBarDefaults.InputField(
-                    modifier = childModifier,
-                    query = searchText,
-                    onQueryChange = { searchText = it },
-                    onSearch = {
-                        searchText = ""
-                        isSearching = false
-                        KeyboardOptions(
-                            imeAction = ImeAction.Default
-                        )
-                    },
-                    expanded = isSearching,
-                    onExpandedChange = { isSearching = it },
-                    placeholder = { Text(text = "Search Here") },
-                    leadingIcon = {
-                        if (isSearching) {
-                            IconButton(
-                                onClick = {
-                                    isSearching = false
-                                    searchText = ""
-                                }) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = null
-                                )
-                            }
-                        } else {
-                            Icon(
-                                imageVector = Icons.Rounded.Search,
-                                contentDescription = null
+                        // Create a Path for the rectangle with an increased curve
+                        val path = Path().apply {
+                            moveTo(0f, 0f) // Top-left corner
+                            lineTo(width, 0f) // Top-right corner
+                            lineTo(width, height) // Right side slightly above bottom-right corner
+                            quadraticTo(
+                                width / 2, height + 50f, // Control point for a deeper curve
+                                0f, height  // End at the bottom-left corner
                             )
+                            close() // Complete the path
                         }
-                    },
-                    trailingIcon = {
-                        if (isSearching && searchText.isNotEmpty()) {
-                            IconButton(
-                                onClick = {
-                                    searchText = ""
+
+                        // Draw the path
+                        drawPath(
+                            path = path,
+                            color = color
+                        )
+                    }
+                    .fillMaxWidth()
+                    .padding(horizontal = paddings),
+                inputField = {
+                    SearchBarDefaults.InputField(
+                        modifier = childModifier,
+                        query = searchText,
+                        onQueryChange = { searchText = it },
+                        onSearch = {
+                            searchText = ""
+                            isSearching = false
+                            KeyboardOptions(
+                                imeAction = ImeAction.Default
+                            )
+                        },
+                        expanded = isSearching,
+                        onExpandedChange = { isSearching = it },
+                        placeholder = { Text(text = "Search Here") },
+                        leadingIcon = {
+                            if (isSearching) {
+                                IconButton(
+                                    onClick = {
+                                        isSearching = false
+                                        searchText = ""
+                                    }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = null
+                                    )
                                 }
-                            ) {
+                            } else {
                                 Icon(
-                                    imageVector = Icons.Rounded.Clear,
+                                    imageVector = Icons.Rounded.Search,
                                     contentDescription = null
                                 )
                             }
-                        }
-                    },
-                )
-            },
-            expanded = isSearching,
-            onExpandedChange = { isSearching = it }
-        ) {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(WindowInsets.displayCutout.asPaddingValues())
-            ) {
-
-                items(passwordState.passwordsList.filter { it.doesMatchSearchQuery(searchText) }) { password ->
-                    SearchItem(
-                        modifier = Modifier
-                            .bringIntoViewRequester(bringIntoViewRequester)
-                            .onFocusEvent { focusState ->
-                                if (focusState.isFocused) {
-                                    coroutineScope.launch {
-                                        bringIntoViewRequester.bringIntoView()
+                        },
+                        trailingIcon = {
+                            if (isSearching && searchText.isNotEmpty()) {
+                                IconButton(
+                                    onClick = {
+                                        searchText = ""
                                     }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Clear,
+                                        contentDescription = null
+                                    )
                                 }
-                            },
-                        password = password,
-                        onClick = {
-                            navigateToPasswordDetailScreenWithIdValue(password.id)
-                            passwordState.title = password.title
-                            passwordState.userName = password.userName
-                            passwordState.password = password.password
-                            passwordState.note = password.note
-                        }
+                            }
+                        },
                     )
+                },
+                expanded = isSearching,
+                onExpandedChange = { isSearching = it }
+            ) {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(WindowInsets.displayCutout.asPaddingValues())
+                        .imePadding()
+                ) {
+
+                    items(passwordState.passwordsList.filter { it.doesMatchSearchQuery(searchText) }) { password ->
+                        SearchItem(
+                            modifier = Modifier,
+                            password = password,
+                            onClick = {
+                                navigateToPasswordDetailScreenWithIdValue(password.id)
+                                passwordState.title = password.title
+                                passwordState.userName = password.userName
+                                passwordState.password = password.password
+                                passwordState.note = password.note
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -363,7 +362,7 @@ fun SharedTransitionScope.PasswordItem(
                 }
             )
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(topEnd = 7.dp, bottomEnd = 7.dp))
             .background(MaterialTheme.colorScheme.surface)
             .clickable(
                 onClick = {
@@ -488,12 +487,12 @@ fun SharedTransitionScope.SwipeToDeleteContainer(
 
     AnimatedVisibility(
         visible = !isDeleted,
-        enter = slideInHorizontally (
+        enter = expandVertically(
             animationSpec = tween(durationMillis = animationDuration),
-        ) + expandVertically(),
-        exit = slideOutHorizontally(
+        ) + slideInHorizontally(),
+        exit = shrinkVertically(
             animationSpec = tween(durationMillis = animationDuration),
-        ) + shrinkVertically()
+        ) + slideOutHorizontally()
     ) {
         SwipeToDismissBox(
             modifier = Modifier,

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -50,6 +51,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -63,7 +65,9 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -182,7 +186,7 @@ fun RegisterScreen(
                             sharedTransitionScope = sharedTransitionScope,
                             animatedVisibilityScope = animatedVisibilityScope,
                         )
-                        Spacer(Modifier.height(150.dp))
+                        Spacer(Modifier.height(70.dp))
                         RegisterBottomContent(
                             animatedVisibilityScope = animatedVisibilityScope,
                             modifier = Modifier
@@ -217,11 +221,16 @@ fun RegisterTopContent(
         Canvas(
             modifier = modifier
                 .sharedElement(
+                    state = rememberSharedContentState("ResetLogo"),
+                    animatedVisibilityScope = animatedVisibilityScope
+                )
+                .sharedElement(
                     state = rememberSharedContentState("Logo"),
                     animatedVisibilityScope = animatedVisibilityScope
                 )
+                .shadow(42.dp, clip = false)
                 .fillMaxWidth()
-                .height(100.dp)
+                .height(200.dp)
         ) {
             val width = this.size.width
             val height = this.size.height
@@ -232,7 +241,7 @@ fun RegisterTopContent(
                 lineTo(width, 0f) // Top-right corner
                 lineTo(width, height) // Right side slightly above bottom-right corner
                 quadraticTo(
-                    width / 2, height + 300f, // Control point for a deeper curve
+                    width / 2, height + 100f, // Control point for a deeper curve
                     0f, height  // End at the bottom-left corner
                 )
                 close() // Complete the path
@@ -269,6 +278,7 @@ fun RegisterBottomContent(
     dataStoreManager: DataStoreManager,
 ) {
 
+    val softKeyBoard = LocalSoftwareKeyboardController.current
     val hapticFeedbackManager = LocalHapticFeedback.current
     var biometricBoolean by remember { mutableStateOf(false) }
     var passwordState by remember { mutableStateOf("") }
@@ -367,7 +377,8 @@ fun RegisterBottomContent(
                 isError = confTextFieldError,
                 supportingText = { Text(text = confSupportingText) },
                 keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Done
+                    imeAction = ImeAction.Done,
+                    keyboardType = KeyboardType.Password
                 ),
                 keyboardActions = KeyboardActions(
                     onDone = {
@@ -386,6 +397,7 @@ fun RegisterBottomContent(
                             confSupportingText = "Password does not match"
                             confTextFieldError = true
                         }
+                        softKeyBoard?.hide()
                     }
                 ),
                 shape = RoundedCornerShape(15.dp),
@@ -441,7 +453,7 @@ fun RegisterBottomContent(
                         state = rememberSharedContentState("regLoginBtn"),
                         animatedVisibilityScope = animatedVisibilityScope
                     )
-                    .fillMaxWidth(),
+                    .fillMaxWidth().imePadding(),
                 shape = RoundedCornerShape(15.dp),
                 onClick = {
                     if (passwordState == "") {
@@ -491,6 +503,7 @@ fun RegisterBottomContent(
             Spacer(Modifier.height(16.dp))
             AnimatedVisibility(textFieldError){
                 Text(
+                    modifier = Modifier.imePadding(),
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium,

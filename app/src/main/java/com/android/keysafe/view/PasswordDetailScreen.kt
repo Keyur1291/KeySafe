@@ -4,10 +4,13 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,6 +19,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -44,6 +48,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
@@ -61,10 +66,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -124,22 +133,54 @@ fun PasswordDetailScreen(
     var includeUpper by remember { mutableStateOf(false) }
     var includeSpecialChars by remember { mutableStateOf(false) }
 
-
     var passwordVisibility by remember { mutableStateOf(false) }
     val icon =
         if (passwordVisibility) Icons.Rounded.Visibility
         else Icons.Outlined.VisibilityOff
+    val color = MaterialTheme.colorScheme.surfaceVariant
 
 
     with(sharedTransitionScope) {
 
         Scaffold(
             topBar = {
-                TopAppBar(
-                    colors = TopAppBarDefaults.topAppBarColors(),
+
+                MediumTopAppBar(
+                    modifier = Modifier
+                        .sharedElement(
+                            state = rememberSharedContentState("DetailLogo"),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
+                        .shadow(42.dp, clip = false)
+                        .drawBehind {
+                            val width = this.size.width
+                            val height = this.size.height
+
+                            // Create a Path for the rectangle with an increased curve
+                            val path = Path().apply {
+                                moveTo(0f, 0f) // Top-left corner
+                                lineTo(width, 0f) // Top-right corner
+                                lineTo(
+                                    width,
+                                    height
+                                ) // Right side slightly above bottom-right corner
+                                quadraticTo(
+                                    width / 2, height + 50f, // Control point for a deeper curve
+                                    0f, height  // End at the bottom-left corner
+                                )
+                                close() // Complete the path
+                            }
+
+                            // Draw the path
+                            drawPath(
+                                path = path,
+                                color = color
+                            )
+                        },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = color),
                     title = {
                         Text(
-                            modifier = Modifier.background(Color.Transparent),
+                            modifier = Modifier,
                             text = if (id == 0) "Add password" else "Update password",
                             style = MaterialTheme.typography.titleLarge
                         )
@@ -158,7 +199,7 @@ fun PasswordDetailScreen(
                                 contentDescription = null
                             )
                         }
-                    }
+                    },
                 )
             }
         ) { paddingValues ->
@@ -184,17 +225,15 @@ fun PasswordDetailScreen(
                         )
                         .skipToLookaheadSize()
                         .fillMaxSize()
-                        .padding(
-                            PaddingValues(
-                                top = paddingValues.calculateTopPadding()
-                            )
-                        )
-                        .padding(horizontal = 16.dp)
+                        .padding(top = paddingValues.calculateTopPadding())
+                        .padding(start = 16.dp, end = 16.dp)
+                        .animateContentSize()
                         .verticalScroll(rememberScrollState())
                         .windowInsetsPadding(WindowInsets.navigationBars),
                 ) {
                     OtherTextField(
                         modifier = Modifier
+                            .padding(top = 24.dp)
                             .sharedElement(
                                 state = rememberSharedContentState(key = "title/${passwordState.title}"),
                                 animatedVisibilityScope = animatedVisibilityScope,
@@ -294,14 +333,14 @@ fun PasswordDetailScreen(
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.End,
+                        horizontalArrangement = Arrangement.Start,
                         modifier = modifier
                             .fillMaxWidth()
-                            .windowInsetsPadding(WindowInsets.navigationBars)
                             .skipToLookaheadSize(),
                     ) {
 
                         IconButton(
+                            modifier = Modifier.weight(1f),
                             onClick = {
 
                                 hapticFeedbackManager.performHapticFeedback(
@@ -423,7 +462,9 @@ fun PasswordDetailScreen(
                             containerColor = MaterialTheme.colorScheme.surfaceContainer
                         ),
                         shape = RoundedCornerShape(15.dp),
-                        modifier = Modifier.skipToLookaheadSize()
+                        modifier = Modifier
+                            .skipToLookaheadSize()
+                            .imePadding()
                     ) {
                         Column(
                             horizontalAlignment = Alignment.Start,
@@ -558,6 +599,7 @@ fun PasswordDetailScreen(
                                     }
                                     Spacer(Modifier.height(16.dp))
                                     Button(
+                                        modifier = Modifier,
                                         shape = RoundedCornerShape(15.dp),
                                         onClick = {
                                             passwordVisibility = true
