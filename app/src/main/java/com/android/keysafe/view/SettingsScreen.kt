@@ -3,13 +3,17 @@ package com.android.keysafe.view
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,10 +28,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,11 +43,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.android.keysafe.data.database.auth.DataStoreManager
 import com.android.keysafe.data.model.Auth
 import dev.chrisbanes.haze.HazeState
@@ -98,6 +109,7 @@ fun SettingsScreen(
         )
     }
 
+    val color = MaterialTheme.colorScheme.surfaceVariant
     val savedPassword by dataStoreManager.getFromDataStore().collectAsState(initial = null)
     val loginPassword = savedPassword?.loginPassword
     var biometricBoolean = savedPassword?.biometricEnable ?: false
@@ -135,10 +147,47 @@ fun SettingsScreen(
 
         Scaffold(
             topBar = {
-                TopAppBar(
-                    modifier = Modifier.hazeEffect(haze),
+
+                MediumTopAppBar(
+                    modifier = Modifier
+                        .sharedElement(
+                            state = rememberSharedContentState("ResetLogo"),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
+                        .sharedElement(
+                            state = rememberSharedContentState("SettingLogo"),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
+                        .shadow(42.dp, clip = false)
+                        .drawBehind {
+                            val width = this.size.width
+                            val height = this.size.height
+
+                            // Create a Path for the rectangle with an increased curve
+                            val path = Path().apply {
+                                moveTo(0f, 0f) // Top-left corner
+                                lineTo(width, 0f) // Top-right corner
+                                lineTo(
+                                    width,
+                                    height
+                                ) // Right side slightly above bottom-right corner
+                                quadraticTo(
+                                    width / 2, height + 50f, // Control point for a deeper curve
+                                    0f, height  // End at the bottom-left corner
+                                )
+                                close() // Complete the path
+                            }
+
+                            // Draw the path
+                            drawPath(
+                                path = path,
+                                color = color
+                            )
+                        },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = color),
                     title = {
                         Text(
+                            modifier = Modifier,
                             text = "Settings",
                             style = MaterialTheme.typography.titleLarge
                         )
@@ -170,7 +219,6 @@ fun SettingsScreen(
                     horizontalAlignment = Alignment.Start,
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(innerPadding)
                         .sharedBounds(
                             resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
                             sharedContentState = rememberSharedContentState(key = "expandFab"),
@@ -178,7 +226,10 @@ fun SettingsScreen(
                         ),
                 ) {
                     LazyColumn(
-                        modifier = Modifier.skipToLookaheadSize()
+                        contentPadding = innerPadding,
+                        modifier = Modifier
+                            .padding(top = 16.dp)
+                            .skipToLookaheadSize()
                     ) {
                         items(menuItems) { item ->
                             SettingsMenuItem(

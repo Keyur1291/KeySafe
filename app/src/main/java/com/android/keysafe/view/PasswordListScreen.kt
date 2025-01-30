@@ -12,8 +12,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -35,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -135,7 +139,7 @@ fun PasswordList(
                                         .padding(
                                             start = 16.dp,
                                             end = 16.dp,
-                                            top = 8.dp,
+                                            top = 24.dp,
                                             bottom = 8.dp
                                         ),
                                 ) {
@@ -179,6 +183,7 @@ fun PasswordList(
                         }
                     } else {
                         Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.fillMaxSize()
                         ) {
                             Row(
@@ -200,12 +205,14 @@ fun PasswordList(
                                         navigateToPasswordDetailScreenWithIdAs0()
                                     }
                                     .padding(innerPadding)
-                                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
                             ) {
                                 Icon(
                                     modifier = Modifier
+                                        .padding(8.dp)
+                                        .size(42.dp)
                                         .clip(RoundedCornerShape(15.dp))
-                                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                                         .padding(8.dp),
                                     imageVector = Icons.Rounded.Add,
                                     contentDescription = null,
@@ -220,11 +227,12 @@ fun PasswordList(
                             }
 
                             Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Bottom,
                                 modifier = Modifier.fillMaxSize()
                             ) {
                                 Image(
-                                    modifier = Modifier,
+                                    modifier = Modifier.padding(WindowInsets.navigationBars.asPaddingValues()),
                                     painter = painterResource(R.drawable.ic_undraw_empty_street_sfxm),
                                     contentDescription = null
                                 )
